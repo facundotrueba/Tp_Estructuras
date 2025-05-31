@@ -5,16 +5,16 @@ class Nodos:
         self.capacidad = capacidad
         self.soporte_modos=soporte_modos
 
-class Conexion:
+class Conexion:  
     tipos = ("fluvial", "aereo", "terrestre","ferroviario")
     def __init__(self, inicio, destino, tipo, distancia):
-        
         self.inicio=inicio
-        self.destino=destino #destino de un tramo especifico
+        self.destino=destino 
         if tipo not in Conexion.tipos:
             raise TypeError("El tipo de conexion es incorrecta")
         self.tipo=tipo #que la via sea una instancia de la clase medio transporte 
         self.distancia=distancia
+        self.restricciones={}  #esto es un diccionario que tiene como clave el tipo de vehiculo y valor la restriccion especifica (ej: restriccion de volocidad de 300km/h para los automotres)
     @staticmethod
     def validar(tipo,restriccion,num): #tipo, aereo,fluvial,etc,restriccion velocidad max peso max, cantidad de peso max
         if restriccion == None:
@@ -40,6 +40,15 @@ class Vehiculo:
         self.costo_fijo = costo_fijo
         self.costo_km = costo_km
         self.costo_kg = costo_kg
+    
+    def calcular_costo(self, distancia, peso): #funcion para calcular el costo de un tipo de vehiculo especifico para un tramo especifico
+        cantidad = -(-peso // self.capacidad)  #cuantos vehiculos se necesitan para transportar esa carga
+        costo= cantidad * (self.costo_fijo + self.costo_km * distancia + self.costo_kg * peso)
+        return costo
+
+    def calcular_tiempo(self, distancia):
+        tiempo=distancia / self.velocidad
+        return tiempo
 
 class Automotor(Vehiculo):
     def __init__(self, tipo, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg):

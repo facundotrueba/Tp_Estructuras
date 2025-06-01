@@ -18,15 +18,14 @@ class Conexion:
     @staticmethod
     def validar(tipo,restriccion,num): #tipo, aereo,fluvial,etc,restriccion velocidad max peso max, cantidad de peso max
         if restriccion == None:
-            pass
-       # else:
-          #  if tipo=="ferroviario":
-            # if velocidad_nominal < num
+            print("No hay ninguna restriccion")
+        
+        else:
+          if tipo=="ferroviario":
+              pass
+           # if velocidad_nominal < num
            #         raise ValueError("execede la velocidad")
         
-
-    
-   
 
 class Vehiculo:
     def __init__(self, tipo, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg): #lo de los costos hacer archivo csv CHEQUEAR LUCAS

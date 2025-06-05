@@ -29,7 +29,7 @@ class Nodos:
 #DICCIONARIO: CLAVE 1 TIPO, CLAVE 2 NODO, CLAVE 3 DESTINO, lista (dist, restriccion, valor_restriccion)
 class Conexion: #Crear un diccionario cuyas claves sean los inicios y dentro del mismo tenga el origen y el tipo (asi podemos buscar mas facil conexiones)
     conexiones = []
-    tipos = ("fluvial", "aereo", "terrestre","ferroviario")
+    tipos = ("fluvial", "aerea", "automotor","ferroviaria")
     restricciones_validas = {"velocidad_max", "peso_max" , "tipo", "prob_mal_tiempo"}
     def __init__(self, inicio, destino, tipo, distancia , restriccion=None,valor_restriccion = None):
         if restriccion == None:                                 
@@ -40,7 +40,7 @@ class Conexion: #Crear un diccionario cuyas claves sean los inicios y dentro del
             self.tipo=tipo #que la via sea una instancia de la clase medio transporte 
             self.distancia=distancia
             Conexion.conexiones.append(self)
-            return("No hay ninguna restriccion")
+            # return("No hay ninguna restriccion") (init no puede devolver un str)
         else:
             self.inicio=inicio
             self.destino=destino 
@@ -126,19 +126,7 @@ class Itinerario:
 
 
 class Red_Transporte:
-
-    
-    def leer_csv(nombre_archivo): #NO TERMINADO
-        datos=[]
-        try:
-            with open(nombre_archivo, mode='r') as file:
-                lector = csv.read(file)
-                for fila in lector:
-                    datos.append(fila)
-        except FileNotFoundError:
-            print("Archivo no encontrado")
             
-
 
     def cargar_conexiones_csv(ruta_archivo):
         with open(ruta_archivo, newline='', encoding='utf-8') as archivo:
@@ -180,17 +168,17 @@ def encontrar_todas_las_rutas(grafo, nodo_inicio, nodo_fin, camino_actual=None):
             nuevas_rutas = encontrar_todas_las_rutas(grafo, vecino, nodo_fin, camino_actual)
             rutas.extend(nuevas_rutas)
     return rutas
-grafo = {
-    "Buenos Aires": ["Azul", "Junin", "Mar del Plata","Zarate"],
-    "Azul": ["Mar del Plata", "Junin", "Buenos Aires"],
-    "Junin": ["Azul","Buenos Aires", "Zarate"],
-    "Zarate":["Buenos Aires","Junin"],
-    "Mar del Plata":["Buenos Aires", "Azul"]
-}
+# grafo = {
+#     "Buenos Aires": ["Azul", "Junin", "Mar del Plata","Zarate"],
+#     "Azul": ["Mar del Plata", "Junin", "Buenos Aires"],
+#     "Junin": ["Azul","Buenos Aires", "Zarate"],
+#     "Zarate":["Buenos Aires","Junin"],
+#     "Mar del Plata":["Buenos Aires", "Azul"]
+# }
 
-rutas = encontrar_todas_las_rutas(grafo, "Buenos Aires", "Mar del Plata")
-for r in rutas:
-    print(r)               
+# rutas = encontrar_todas_las_rutas(grafo, "Buenos Aires", "Mar del Plata")
+# for r in rutas:
+#     print(r)               
         
         
 def calcular_costos_tiempo(recorrido,tipo_transporte,peso):

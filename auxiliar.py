@@ -15,7 +15,8 @@ def leer_csv(nombre_archivo):
 def cargar_conexiones(nombre_archivo):
     datos = leer_csv(nombre_archivo)
     for i in datos:
-        c = Sistema_de_Transporte.Conexion(i[0], i[1], i[2], i[3], i[4], i[5])
+        ida = Sistema_de_Transporte.Conexion(i[0], i[1], i[2], i[3], i[4], i[5])
+        vuelta = Sistema_de_Transporte.Conexion(i[1], i[0], i[2], i[3], i[4], i[5])
 
 def cargar_solicitudes(nombre_archivo):
     datos = leer_csv(nombre_archivo)

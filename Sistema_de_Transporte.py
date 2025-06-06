@@ -1,7 +1,7 @@
 import csv
 import math
 
-class Planificador: #se instancia una vez
+class Planificador: #se instancia MUCHAS VECES. UN PLANIFICADOR POR CADA SOLICITUD.(segun lo que dice ne la consigna en objetivo general)
     '''
     metodos:
     encontrar rutas
@@ -19,7 +19,7 @@ class Planificador: #se instancia una vez
 class Nodos:
     #almacenar nodos
     #almacenar conexiones
-
+    lista_nodos = []
     def __init__(self, nombre):
         self.nombre=nombre
     #self.conexiones
@@ -27,11 +27,42 @@ class Nodos:
     
     
 #DICCIONARIO: CLAVE 1 TIPO, CLAVE 2 NODO, CLAVE 3 DESTINO, lista (dist, restriccion, valor_restriccion)
-class Conexion: #Crear un diccionario cuyas claves sean los inicios y dentro del mismo tenga el origen y el tipo (asi podemos buscar mas facil conexiones)
-    conexiones = []
+class Conexion: 
+    conexiones_por_tipo = {}
     tipos = ("fluvial", "aerea", "automotor","ferroviaria")
     restricciones_validas = {"velocidad_max", "peso_max" , "tipo", "prob_mal_tiempo"}
-    def __init__(self, inicio, destino, tipo, distancia , restriccion=None,valor_restriccion = None):
+    def __init__(self, origen, destino, tipo, distancia, restriccion, valor_restriccion):
+        self.origen = origen
+        self.destino = destino
+        if tipo not in Conexion.tipos:
+                raise TypeError("El tipo de conexion es incorrecta")
+        self.tipo = tipo
+        self.distancia = float(distancia)
+        self.restriccion = restriccion
+        self.valor_restriccion = valor_restriccion
+
+        # Actualiza el diccionario de clase
+       if tipo not in Conexion.conexiones_por_tipo:
+            Conexion.conexiones_por_tipo[tipo] = {self}
+        else:
+            Conexion.conexiones_por_tipo[tipo].add(self)
+        
+    def __str__(self):
+        return (f"De {self.origen} a {self.destino}. Tipo: {self.tipo}")
+    
+    def __eq__(self, other):
+    def __hash__(self): #el gordo me dice que esta mal tener eq y no tener hash, preguntarle a lucas.
+        return hash((self.origen, self.destino, self.tipo, self.distancia, self.restriccion, self.valor_restriccion))
+        if not isinstance(other, Conexion):
+            return False
+        return (self.origen == other.origen and
+                self.destino == other.destino and
+                self.tipo == other.tipo and
+                self.distancia == other.distancia and
+                self.restriccion == other.restriccion and
+                self.valor_restriccion == other.valor_restriccion)
+    
+    ''' def __init__(self, inicio, destino, tipo, distancia , restriccion=None,valor_restriccion = None):
         if restriccion == None:                                 
             self.inicio=inicio
             self.destino=destino 
@@ -39,9 +70,9 @@ class Conexion: #Crear un diccionario cuyas claves sean los inicios y dentro del
                 raise TypeError("El tipo de conexion es incorrecta")
             self.tipo=tipo #que la via sea una instancia de la clase medio transporte 
             self.distancia=distancia
-            Conexion.conexiones.append(self)
+            
             # return("No hay ninguna restriccion") (init no puede devolver un str)
-        else:
+        else:de
             self.inicio=inicio
             self.destino=destino 
             if tipo not in Conexion.tipos:
@@ -50,7 +81,7 @@ class Conexion: #Crear un diccionario cuyas claves sean los inicios y dentro del
             self.distancia=distancia
             self.restriccion = restriccion 
             self.valor_restriccion = valor_restriccion
-            Conexion.conexiones.append(self)
+            Conexion.conexiones.append(self) '''
 
     def __str__(self):
             return f"Inicio:{self.inicio}, Destino:{self.destino}"
@@ -103,11 +134,12 @@ class Fluvial(Vehiculo):
 
 #DICCIONARIO ID: SELF
 class Solicitud_Transporte:
-    def __init__(self, id_carga, peso_kg, origen, destino):
+    def __init__(self, id_carga,nombre, peso_kg, origen, destino):
         if peso_kg <= 0: #Validaciones
             raise ValueError("El peso debe ser mayor a cero.")
         if origen == destino:
             raise ValueError("El destino debe ser distinto del origen.")
+        self.nombre=nombre
         self.id_carga=id_carga
         self.peso_kg=peso_kg
         self.origen=origen
@@ -153,32 +185,8 @@ class Red_Transporte:
 
     
 
-def encontrar_todas_las_rutas(grafo, nodo_inicio, nodo_fin, camino_actual=None):
-    if camino_actual is None:
-        camino_actual = []
 
-    camino_actual = camino_actual + [nodo_inicio]
 
-    if nodo_inicio == nodo_fin:
-        return [camino_actual]
-
-    rutas = []
-    for vecino in grafo.get(nodo_inicio,[]):
-        if vecino not in camino_actual:
-            nuevas_rutas = encontrar_todas_las_rutas(grafo, vecino, nodo_fin, camino_actual)
-            rutas.extend(nuevas_rutas)
-    return rutas
-# grafo = {
-#     "Buenos Aires": ["Azul", "Junin", "Mar del Plata","Zarate"],
-#     "Azul": ["Mar del Plata", "Junin", "Buenos Aires"],
-#     "Junin": ["Azul","Buenos Aires", "Zarate"],
-#     "Zarate":["Buenos Aires","Junin"],
-#     "Mar del Plata":["Buenos Aires", "Azul"]
-# }
-
-# rutas = encontrar_todas_las_rutas(grafo, "Buenos Aires", "Mar del Plata")
-# for r in rutas:
-#     print(r)               
         
         
 def calcular_costos_tiempo(recorrido,tipo_transporte,peso):
@@ -190,3 +198,26 @@ def calcular_costos_tiempo(recorrido,tipo_transporte,peso):
         costo_total += Vehiculo.calcular_costo(distancia,peso)
         tiempo_total += Vehiculo.calcular_tiempo(distancia)
     return costo_total,tiempo_total
+
+def encontrar_todas_las_rutas(grafo, nodo_inicio, nodo_fin, camino_actual=None):
+    if camino_actual is None:
+        camino_actual = []
+
+    rutas = []
+
+    # Si no hay ninguna conexión en el camino aún, estamos empezando
+    if not camino_actual:
+        conexiones_posibles = grafo.get(nodo_inicio, [])
+    else:
+        ultimo_nodo = camino_actual[-1].destino
+        if ultimo_nodo == nodo_fin:
+            return [camino_actual]
+        conexiones_posibles = grafo.get(ultimo_nodo, [])
+
+    for conexion in conexiones_posibles:
+        siguiente_nodo = conexion.destino
+        if siguiente_nodo not in [c.destino for c in camino_actual] and (not camino_actual or conexion.origen == camino_actual[-1].destino):
+            nuevas_rutas = encontrar_todas_las_rutas(grafo, nodo_inicio, nodo_fin, camino_actual + [conexion])
+            rutas.extend(nuevas_rutas)
+
+    return rutas

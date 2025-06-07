@@ -308,7 +308,9 @@ import auxiliar
 import Sistema_de_Transporte
 
 grafo = auxiliar.inicializar_sistema("nodos.csv", "conexiones.csv")
-origen = Sistema_de_Transporte.Nodo.get_nombre("Buenos Aires")
-destino = Sistema_de_Transporte.Nodo.get_nombre("Mar del Plata")
+#origen = Sistema_de_Transporte.Nodo.get_nombre("Buenos Aires")
+#destino = Sistema_de_Transporte.Nodo.get_nombre("Mar del Plata")
 
-Sistema_de_Transporte.testear_funciones(grafo, origen, destino)
+
+
+Sistema_de_Transporte.testear_funciones(grafo, "Buenos_Aires", "Mar_del_Plata") #los nombres de nodos escribirlos tal cual estan en csv

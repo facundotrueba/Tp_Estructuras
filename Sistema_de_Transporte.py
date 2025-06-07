@@ -14,7 +14,6 @@ class Planificador: #se instancia MUCHAS VECES. UN PLANIFICADOR POR CADA SOLICIT
     '''
 
 
-#self.nodos["Buenos Aires"].agregarConexion(conexion)
 
 class Nodo:
     lista_nodos = []
@@ -22,11 +21,9 @@ class Nodo:
     def __init__(self, nombre):
         self.nombre = nombre
         Nodo.lista_nodos.append(self)
-
+        
     def __str__(self):
         return self.nombre
-
-
 
     @classmethod
     def get_nombre(cls, nombre):
@@ -39,13 +36,12 @@ class Nodo:
         return None
 
 
-
         
     
     
 #DICCIONARIO: CLAVE 1 TIPO, CLAVE 2 NODO, CLAVE 3 DESTINO, lista (dist, restriccion, valor_restriccion)
 class Conexion: 
-    conexiones_por_tipo = {}
+    conexiones_por_tipo = {}#clave=tipo, valor=set de conexiones del tipo
     tipos = ("fluvial", "aerea", "automotor", "ferroviaria")
     restricciones_validas = {"velocidad_max", "peso_max", "tipo", "prob_mal_tiempo"}
 
@@ -56,6 +52,7 @@ class Conexion:
         self.tipo = tipo.strip().lower()
         if self.tipo not in Conexion.tipos:
             raise TypeError("El tipo de conexión es incorrecto.")
+        
 
         self.distancia = float(distancia)
 
@@ -89,38 +86,10 @@ class Conexion:
 
     def __hash__(self): #el gordo me dice que lo tenga ni idea
         return hash((self.origen, self.destino, self.tipo, self.distancia, self.restriccion, self.valor_restriccion))
-
-    ''' def __init__(self, inicio, destino, tipo, distancia , restriccion=None,valor_restriccion = None):
-        if restriccion == None:                                 
-            self.inicio=inicio
-            self.destino=destino 
-            if tipo not in Conexion.tipos:
-                raise TypeError("El tipo de conexion es incorrecta")
-            self.tipo=tipo #que la via sea una instancia de la clase medio transporte 
-            self.distancia=distancia
-            
-            # return("No hay ninguna restriccion") (init no puede devolver un str)
-        else:de
-            self.inicio=inicio
-            self.destino=destino 
-            if tipo not in Conexion.tipos:
-                raise TypeError("El tipo de conexion es incorrecta")
-            self.tipo=tipo #que la via sea una instancia de la clase medio transporte 
-            self.distancia=distancia
-            self.restriccion = restriccion 
-            self.valor_restriccion = valor_restriccion
-            Conexion.conexiones.append(self) '''
-
-    def __str__(self):
-            return f"Inicio:{self.inicio}, Destino:{self.destino}"
-    def getConexion(inicio, destino,tipo_transporte):
-        for conexion in Conexion.conexiones:
-            if (conexion.inicio == inicio and conexion.destino == destino and conexion.tipo==tipo_transporte)or(conexion.inicio == destino and conexion.destino == inicio and conexion.tipo==tipo_transporte):
-                return conexion
-
+    
         
 
-class Vehiculo:
+class Tipo_transporte:
     def __init__(self, tipo, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg): #lo de los costos hacer archivo csv CHEQUEAR LUCAS
         self.tipo=tipo
         if velocidad_nominal<= 0:
@@ -133,14 +102,21 @@ class Vehiculo:
         self.costo_km = costo_km
         self.costo_kg = costo_kg
     
-    def calcular_costo(self, distancia, peso): #funcion para calcular el costo de un tipo de vehiculo especifico para un tramo especifico
+    def calcular_costo(self, distancia, peso,): #funcion para calcular el costo de un tipo de vehiculo especifico para un tramo especifico
         cantidad = math.ceil(peso / self.capacidad_carga)  #cuantos vehiculos se necesitan para transportar esa carga
         costo_total= cantidad * (self.costo_fijo + self.costo_km * distancia + self.costo_kg * peso)
         return costo_total
 
-    def calcular_tiempo(self, distancia):
-        tiempo= distancia / self.velocidad
+    def calcular_tiempo(self, distancia, tipo):
+        tiempo= distancia / self.velocidad_nominal #ta mal no es siempre velocidad nominal. chequear restriccion, velocidad_max
         return tiempo
+
+#restricciones: 
+# velocidad max: tipo ferroviario (costo por km)
+# carga max: tipo automotor (costo por kg)
+# fluvial o maritima distinta taza fija
+# conexion aerea hace algo raro con probabilidad del tiempo
+
 
 class Automotor(Vehiculo):
     def __init__(self, tipo, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg):
@@ -186,47 +162,50 @@ class Itinerario:
 
 
 class Red_Transporte:
-            
-
-    def cargar_conexiones_csv(ruta_archivo): #no la vi a la funcion antes (sory) pero creo que con lo que cambie ya no lo necesitamos , la voy a comentar por las dudas
-        with open(ruta_archivo, newline='', encoding='utf-8') as archivo:
-            lector = csv.DictReader(archivo)
-            for fila in lector:
-                origen = fila['origen']
-                destino = fila['destino']
-                tipo = fila['tipo']
-                distancia = float(fila['distancia_km'])
-
-                restriccion = fila['restriccion'] if fila['restriccion'] else None
-                valor_restriccion = fila['valor_restriccion']
-                if valor_restriccion :  #Falta validar esto bien
-                    try:
-                        valor_restriccion = float(valor_restriccion)
-                    except ValueError:
-                        pass  # Si es texto como "maritimo"
-                else:
-                    valor_restriccion = 0
-
-                Conexion(origen, destino, tipo, distancia, restriccion, valor_restriccion)
-                
+        pass
                 
 
+def calcular_costo_tiempo(ruta,peso,tipo_transporte): # ruta es lista de conexiones. #ruta= [zarate->bsas, bsas->mdp]
+    for i in range(len(ruta)):
+        distancia = i.distancia
+        costo_total += Vehiculo.calcular_costo(distancia,peso,tipo_transporte)
+        tiempo_total += Vehiculo.calcular_tiempo(distancia,tipo_transporte)
+    return costo_total,tiempo_total
+    
+#ex-tobi: del dicc de encontrar_todas_rutas tengo que llamar a calcular_costos_tiempo para que le calcule el costo y tiempo a cada una de esas rutas. de todos esos tiemposy costos tengo que buscar la ruta con tiempo y costo mas bajo. 
+#diccionario con cada clave siendo cada tipo y cada valor siendo una lista de rutas (lista de listas).
+# Cada ruta es una lista de conexiones que hay entre los nodos. 
+
+""""
+diccionario_rutas = {
+ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
+[Zarate,Azul,Mar_del_Plata]}
+}
+}
+"""
+def indice_mas_bajo(lista):
+    if not lista:
+        raise ValueError("La lista está vacía")
+    return min(range(len(lista)), key=lambda i: lista[i])
+
+def analisis_costo_tiempo(diccionario_rutas):#diccionario de encontrar_todas_rutas
+    lista_costo = []
+    lista_tiempo = []
+    lista_rutas = []
+    for ruta in diccionario_rutas.values :
+        costo_total, tiempo_total = calcular_costo_tiempo(ruta)
+        lista_rutas.append(ruta)
+        lista_costo.append(costo_total)
+        lista_tiempo.append(tiempo_total)
+    menor_costo = lista_costo[indice_mas_bajo(lista_costo)]
+    ruta_menor_costo = lista_costo[indice_mas_bajo(lista_costo)]
+    menor_tiempo = lista_tiempo[indice_mas_bajo(lista_tiempo)]
+    ruta_menor_tiempo = lista_tiempo[indice_mas_bajo(lista_tiempo)]
+    return menor_costo, ruta_menor_costo, menor_tiempo, ruta_menor_tiempo
     
 
 
-
-        
-        
-def calcular_costos_tiempo(recorrido,tipo_transporte,peso):
-    for i in range(len(recorrido)-1):
-        inicio = i
-        destino = i+1
-        conexion = Conexion.getConexion(recorrido[inicio], recorrido[destino],tipo_transporte)
-        distancia = conexion.distancia
-        costo_total += Vehiculo.calcular_costo(distancia,peso)
-        tiempo_total += Vehiculo.calcular_tiempo(distancia)
-    return costo_total,tiempo_total
-
+    
 def es_conexion_valida(conexion, tipo, nodo_actual, nodos_visitados):
     return (
         conexion.tipo == tipo and
@@ -269,10 +248,6 @@ def construir_grafo(diccionario):
                 grafo[conexion.origen] = []
             grafo[conexion.origen].append(conexion)
     return grafo #devuelve el grafo usado en  encontrar todas rutas
-
-
-
-
 
 def testear_funciones(grafo, nombre_origen, nombre_destino):
     origen = Nodo.get_nombre(nombre_origen)

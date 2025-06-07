@@ -18,6 +18,7 @@ def cargar_nodos(nombre_archivo):
     for i in datos:
         if i and i[0].strip():
             Sistema_de_Transporte.Nodo(i[0].strip())
+            
 def cargar_conexiones(nombre_archivo):
     datos = leer_csv(nombre_archivo)
     for i in datos:
@@ -32,13 +33,15 @@ def cargar_conexiones(nombre_archivo):
         if tipo not in Sistema_de_Transporte.Conexion.tipos:
             print(f"Tipo desconocido: '{tipo}'")
 
-        ida = Sistema_de_Transporte.Conexion(origen, destino, tipo, i[3], restriccion, valor_restriccion)
-        vuelta = Sistema_de_Transporte.Conexion(destino, origen, tipo, i[3], restriccion, valor_restriccion)
+        
+
+        Sistema_de_Transporte.Conexion(origen, destino, tipo, i[3], restriccion, valor_restriccion)
+        Sistema_de_Transporte.Conexion(destino, origen, tipo, i[3], restriccion, valor_restriccion)
 
 def cargar_solicitudes(nombre_archivo):
     datos = leer_csv(nombre_archivo)
     for i in datos:
-        s = Sistema_de_Transporte.Solicitud_Transporte(i[0], i[1], i[2], i[3])
+        Sistema_de_Transporte.Solicitud_Transporte(i[0], i[1], i[2], i[3])
 
 
 def inicializar_sistema(nodos_path, conexiones_path):

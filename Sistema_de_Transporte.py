@@ -90,8 +90,8 @@ class Conexion:
         
 
 class Tipo_transporte:
-    def __init__(self, tipo, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg): #lo de los costos hacer archivo csv CHEQUEAR LUCAS
-        self.tipo=tipo
+    def __init__(self, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg): #lo de los costos hacer archivo csv CHEQUEAR LUCAS
+        
         if velocidad_nominal<= 0:
             ValueError("La velocidad no puede ser negativa")
         if capacidad_carga<= 0:
@@ -102,13 +102,13 @@ class Tipo_transporte:
         self.costo_km = costo_km
         self.costo_kg = costo_kg
     
-    def calcular_costo(self, distancia, peso,): #funcion para calcular el costo de un tipo de vehiculo especifico para un tramo especifico
-        cantidad = math.ceil(peso / self.capacidad_carga)  #cuantos vehiculos se necesitan para transportar esa carga
+    def calcular_costo(self, distancia, peso): #funcion GENERAL para calcular el costo de un tipo de vehiculo especifico para una conexion especifica
+        cantidad = math.ceil(peso / self.capacidad_carga)  #cuantos vehiculos se necesitan para transportar esa carga EN ESA CONEXION 
         costo_total= cantidad * (self.costo_fijo + self.costo_km * distancia + self.costo_kg * peso)
         return costo_total
 
-    def calcular_tiempo(self, distancia, tipo):
-        tiempo= distancia / self.velocidad_nominal #ta mal no es siempre velocidad nominal. chequear restriccion, velocidad_max
+    def calcular_tiempo(self, distancia, tipo): #funcion GENERAL para calcular el costo de un tipo de vehiculo especifico para una conexion especifica
+        tiempo= distancia / self.velocidad_nominal 
         return tiempo
 
 #restricciones: 
@@ -118,25 +118,35 @@ class Tipo_transporte:
 # conexion aerea hace algo raro con probabilidad del tiempo
 
 
-class Automotor(Vehiculo):
-    def __init__(self, tipo, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg):
-        super().__init__(tipo, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg)
-        
+class Automotor(Tipo_transporte): # el codigo va a funcionar de tal manera que si se arranca una ruta con 8 automotores, Si se puede despues hacer con 10 automotores y despues 8 de vuelta en otra conexion
+    def __init__(self,  velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg):
+        super().__init__( velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg)
+    
+    def calcular_costo (self, distancia, peso): 
+        pass
     
     
-class Aereo(Vehiculo):
-  def __init__(self, tipo, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg):
-      super().__init__(tipo, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg)
+class Aerea(Tipo_transporte):
+  def __init__(self, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg):
+      super().__init__( velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg)
+  def calcular_tiempo(self, distancia, tipo): 
+      pass  
       
-      
 
-class Fluvial(Vehiculo):
-    def __init__(self,tipo, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg):
-        super().__init__(tipo, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg)
+class Fluvial(Tipo_transporte):
+    def __init__(self, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg):
+        super().__init__( velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg)
 
+    def calcular_costo (self, distancia, peso): 
+        pass
+class Ferroviaria(Tipo_transporte):
+    def __init__(self, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg):
+        super().__init__( velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg)
+    def calcular_tiempo(self, distancia, tipo): 
+        pass  
+    
+    
 
-
-#DICCIONARIO ID: SELF
 class Solicitud_Transporte:
     def __init__(self, id_carga,nombre, peso_kg, origen, destino):
         if peso_kg <= 0: #Validaciones
@@ -168,8 +178,8 @@ class Red_Transporte:
 def calcular_costo_tiempo(ruta,peso,tipo_transporte): # ruta es lista de conexiones. #ruta= [zarate->bsas, bsas->mdp]
     for i in range(len(ruta)):
         distancia = i.distancia
-        costo_total += Vehiculo.calcular_costo(distancia,peso,tipo_transporte)
-        tiempo_total += Vehiculo.calcular_tiempo(distancia,tipo_transporte)
+        costo_total += Tipo_transporte.calcular_costo(distancia,peso,tipo_transporte)
+        tiempo_total += Tipo_transporte.calcular_tiempo(distancia,tipo_transporte)
     return costo_total,tiempo_total
     
 #ex-tobi: del dicc de encontrar_todas_rutas tengo que llamar a calcular_costos_tiempo para que le calcule el costo y tiempo a cada una de esas rutas. de todos esos tiemposy costos tengo que buscar la ruta con tiempo y costo mas bajo. 
@@ -188,7 +198,7 @@ def indice_mas_bajo(lista):
         raise ValueError("La lista está vacía")
     return min(range(len(lista)), key=lambda i: lista[i])
 
-def analisis_costo_tiempo(diccionario_rutas):#diccionario de encontrar_todas_rutas
+def analisis_costo_tiempo(diccionario_rutas):# el diccionario_rutas es un diccionario de encontrar_todas_rutas
     lista_costo = []
     lista_tiempo = []
     lista_rutas = []

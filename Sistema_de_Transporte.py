@@ -121,17 +121,24 @@ class Tipo_transporte:
 class Automotor(Tipo_transporte): # el codigo va a funcionar de tal manera que si se arranca una ruta con 8 automotores, Si se puede despues hacer con 10 automotores y despues 8 de vuelta en otra conexion
     def __init__(self,  velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg):
         super().__init__( velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg)
-    
-    def calcular_costo (self, distancia, peso): 
-        pass
+         
+    def calcular_costo(self, distancia, peso, conexion):
+        if Conexion.restriccion == "peso_max":
+            if peso > float(Conexion.valor_restriccion):
+                return float("inf") # Descartamos la ruta (No se si float("inf") es lo as apropiado)
+        return super().calcular_costo(distancia, peso)
     
     
 class Aerea(Tipo_transporte):
-  def __init__(self, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg):
+    def __init__(self, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg):
       super().__init__( velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg)
-  def calcular_tiempo(self, distancia, tipo): 
-      pass  
-      
+    
+    def calcular_tiempo(self, distancia, conexion):
+        velocidad = self.velocidad_nominal
+        if Conexion.restriccion == "prob_mal_tiempo": #Calcular probabilidad de mal tiempo
+            pass 
+            #return distancia/velocidad contemplando la probabilidad de mal tiempo
+        return super().calcular_tiempo(distancia,"aerea")
 
 class Fluvial(Tipo_transporte):
     def __init__(self, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg):
@@ -139,11 +146,16 @@ class Fluvial(Tipo_transporte):
 
     def calcular_costo (self, distancia, peso): 
         pass
+
 class Ferroviaria(Tipo_transporte):
     def __init__(self, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg):
         super().__init__( velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg)
-    def calcular_tiempo(self, distancia, tipo): 
-        pass  
+    
+    def calcular_tiempo(self, distancia, conexion):
+        velocidad = self.velocidad_nominal # Usamos la menor velocidad entre la nominal y la máxima de la vía
+        if Conexion.restriccion == "velocidad_max":
+            velocidad = min(velocidad, float(conexion.valor_restriccion))
+        return distancia / velocidad
     
     
 

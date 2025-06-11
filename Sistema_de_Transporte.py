@@ -45,6 +45,7 @@ class Planificador: #se instancia UNA VEZ.
             raise ValueError("La lista está vacía")
         return min(range(len(lista)), key=lambda i: lista[i])
     
+    
     def es_conexion_valida(conexion, tipo, nodo_actual, nodos_visitados):
         return (
             conexion.tipo == tipo and
@@ -74,25 +75,13 @@ class Planificador: #se instancia UNA VEZ.
         costo_fijo = vehiculo.costo_fijo
         costo_x_kg = vehiculo.costo_kg
         
-        if isinstance(vehiculo, Fluvial):
-            if conexion.valor_restriccion.lower() == "fluvial":
-                costo_fijo = 500
-            elif conexion.valor_restriccion.lower() == "maritima":
-                costo_fijo = 1500
-            else:
-                costo_fijo = 500
+        if isinstance(vehiculo, Tipo_transporte):
+            costo_x_km = vehiculo.costo_km
+            costo_fijo = vehiculo.costo_fijo
+            costo_x_kg = vehiculo.costo_kg
+        else:
+            raise ValueError("Tipo de transporte no reconocido")
         
-        elif isinstance(vehiculo, Ferroviaria):
-            if conexion.distancia < 200:
-                costo_x_km = 20
-            else:
-                costo_x_km = 15
-        
-        elif isinstance(vehiculo, Automotor):
-            if carga < 15000:
-                costo_x_kg = 1
-            else:
-                costo_x_kg = 2
         
         costo_total = cantidad_vehiculos * (costo_fijo + costo_x_km * conexion.distancia + costo_x_kg * carga)
         return costo_total 
@@ -107,42 +96,21 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
 }
 }
 """
-def calcular_tiempo(conexion, vehiculo):
-    """
-    Calcula el tiempo en horas para una conexión específica usando el tipo de transporte adecuado.
-    
-    Args:
-        conexion (Conexion): objeto que contiene distancia, tipo, y restricciones.
-        tipo_transporte (objeto Vehiculo): instancia de la clase correspondiente.
+    def calcular_tiempo(conexion, vehiculo):
 
-    Returns:
-        float: tiempo estimado en horas.
-    """
-    distancia = conexion.distancia
+        distancia = conexion.distancia
 
-    if isinstance(vehiculo, Aereo):
-        if conexion.restriccion == 'prob_mal_tiempo':
-             prob = float(conexion.valor_restriccion)
-             velocidad = determinar_velocidad(prob)
+        if isinstance(vehiculo, Tipo_transporte):
+            velocidad = vehiculo.velocidad_nominal
         else:
-             velocidad = 600
-    else:
-        velocidad = vehiculo.velocidad
-        isinstance(vehiculo, Automotor):
-        velocidad = 80
-    elif isinstance(vehiculo, Ferroviaria):
-        velocidad = 100
-        if conexion.restriccion == "velocidad_max":
-            velocidad = min(velocidad, float(conexion.valor_restriccion))
-    elif isinstance(vehiculo, Maritimo):
-        velocidad = 40
-    else:
-        raise ValueError("Tipo de transporte no reconocido")
-    
-    tiempo_total = distancia / velocidad
+            raise ValueError("Tipo de transporte no reconocido")
+        
+        tiempo_total = distancia / velocidad
 
-    return tiempo_total
-    def analisis_costo_tiempo(self, diccionario_rutas,peso,tipo_transporte):# el diccionario_rutas es un diccionario de encontrar_todas_rutas
+        return tiempo_total
+    
+    
+    def analisis_costo_tiempo(self, diccionario_rutas,carga,tipo_transporte):# el diccionario_rutas es un diccionario de encontrar_todas_rutas
         lista_costo = []
         lista_tiempo = []
         lista_rutas = []
@@ -161,20 +129,48 @@ def calcular_tiempo(conexion, vehiculo):
         costo_total = 0
         tiempo_total = 0
         
-            
-            
         cantidad_vehiculos = Planificador.cantidad_vehiculos(ruta, tipo_transporte, carga)
+        
         for conexion in ruta:
-            if tipo_transporte="Aereo":  #CHEQUEAR COMO SE ESCRIBEN LOS STRINGS ESTOS
-            vehiculo=Aereo()
-            elif tipo_transporte="Fluvial":
-                vehiculo=Fluvial()
-            elif tipo_transporte="Automotor":
-                vehiculo=Automotor() 
-            elif tipo_transporte="Ferroviario":
+            if tipo_transporte=="Aerea":  #CHEQUEAR COMO SE ESCRIBEN LOS STRINGS ESTOS
+                
+                if conexion.restriccion == 'prob_mal_tiempo':
+                    prob = float(conexion.valor_restriccion)
+                    velocidad = Planificador.determinar_vel(prob)
+                    vehiculo=Aerea(velocidad)
+                else:
+                    vehiculo=Aerea()
+                    
+            elif tipo_transporte=="Fluvial":
+                
+                if conexion.valor_restriccion.lower() == "fluvial":
+                    vehiculo=Fluvial(costo_fijo = 500)
+                elif conexion.valor_restriccion.lower() == "maritima":
+                    vehiculo=Fluvial(costo_fijo = 1500)
+                else:
+                    vehiculo=Fluvial()
+                
+                
+            elif tipo_transporte=="Automotor":
+                
+                #MUY IMPORTANTE!!!!! HAY QUE PENSAR Y CAMBIAR ESTO
+                if carga < 15000:
+                    vehiculo=Automotor(costo_x_kg=1)
+                else:
+                    vehiculo=Automotor(costo_x_kg=2)              
+                #esto esta mal!!!!! PARA TODOS LOS TIPOS ESTA BIEN PERO PARA ESTE JUSTO ME QUEDO UNA DUDA MINIMA
+                
+            elif tipo_transporte=="Ferroviaria":
+                
+                if conexion.restriccion == 'velocidad_max':
+                    velocidad = min(100, float(conexion.valor_restriccion))
+                    if conexion.distancia < 200:
+                        vehiculo=Ferroviaria(velocidad,costo_x_km = 20)
+                    else:
+                        vehiculo=Ferroviaria(velocidad,costo_x_km = 15)
                 
             costo_total += Planificador.calcular_costo(conexion,cantidad_vehiculos,vehiculo, carga)
-            tiempo_total += Planificador.calcular_tiempo(conexion,tipo_transporte)
+            tiempo_total += Planificador.calcular_tiempo(conexion, vehiculo)
         return costo_total,tiempo_total
           
     ''' 
@@ -188,7 +184,8 @@ def calcular_tiempo(conexion, vehiculo):
         return cantidad
     '''
     
-    def determinar_velocidad(prob_mal_tiempo, velocidad_buen_tiempo = 600, velocidad_mal_tiempo = 400):
+    @staticmethod
+    def determinar_vel(prob_mal_tiempo, velocidad_buen_tiempo = 600, velocidad_mal_tiempo = 400):
         
         if not 0 <= prob_mal_tiempo <= 1:
             raise ValueError("La probabilidad debe estar entre 0 y 1.")
@@ -340,16 +337,6 @@ class Aerea(Tipo_transporte):
 #     return velocidad_nominal
 
 
-
-    def determinar_velocidad(prob_mal_tiempo, velocidad_buen_tiempo = 600, velocidad_mal_tiempo = 400):
-        
-        if not 0 <= prob_mal_tiempo <= 1:
-            raise ValueError("La probabilidad debe estar entre 0 y 1.")
-
-        if random.random() <= prob_mal_tiempo:
-            return velocidad_mal_tiempo
-        else:
-            return velocidad_buen_tiempo
 
   
 

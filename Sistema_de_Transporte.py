@@ -142,6 +142,16 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
         return cantidad
     '''
     
+    def determinar_velocidad(prob_mal_tiempo, velocidad_buen_tiempo = 600, velocidad_mal_tiempo = 400):
+        
+        if not 0 <= prob_mal_tiempo <= 1:
+            raise ValueError("La probabilidad debe estar entre 0 y 1.")
+
+        if random.random() <= prob_mal_tiempo:
+            return velocidad_mal_tiempo
+        else:
+            return velocidad_buen_tiempo
+    
 class Nodo:
     lista_nodos = []
     def __init__(self, nombre):
@@ -328,7 +338,20 @@ class Solicitud_Transporte:
         self.destino=destino
         
 
-
+class Itinerario:
+    def __init__(self, id_solicitud, secuencia_tramos, costo, tiempo, optimizacion,tipo_tranporte):#revisar este print
+        self.id_solicitud =id_solicitud
+        self.secuencia_tramos=secuencia_tramos
+        self.costo=costo
+        self.tiempo=tiempo
+        self.optimizacion= optimizacion
+        self.tipo_transporte = tipo_tranporte
+        
+    
+    
+    
+    def mostrar_resumen(self):
+        return f"Itinerario hacia {self.destino} | Tramos: {len(self.secuencia_tramos)} | Tiempo: {self.tiempo} min | Costo: ${self.costo}"
 
     
 #ex-tobi: del dicc de encontrar_todas_rutas tengo que llamar a calcular_costos_tiempo para que le calcule el costo y tiempo a cada una de esas rutas. de todos esos tiemposy costos tengo que buscar la ruta con tiempo y costo mas bajo. 

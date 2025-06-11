@@ -45,7 +45,7 @@ class Planificador: #se instancia UNA VEZ.
             raise ValueError("La lista está vacía")
         return min(range(len(lista)), key=lambda i: lista[i])
     
-    
+
     def es_conexion_valida(conexion, tipo, nodo_actual, nodos_visitados):
         return (
             conexion.tipo == tipo and
@@ -57,6 +57,13 @@ class Planificador: #se instancia UNA VEZ.
 # carga max: tipo automotor (costo por kg)
 # fluvial o maritima distinta taza fija
 # conexion aerea hace algo raro con probabilidad del tiempo
+    """
+diccionario_rutas = {
+ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
+[Zarate,Azul,Mar_del_Plata]}
+}
+}
+"""
     def cantidad_vehiculos(self, ruta, vehiculo, carga): #ruta es una lista de conexiones
         if isinstance(vehiculo, Automotor) and conexion.restriccion != None: #carga es la carga que se quiere transportar, capaciad es el peso maximo del vehiculo
             capacidades_posibles=[]
@@ -71,9 +78,6 @@ class Planificador: #se instancia UNA VEZ.
             
     
     def calcular_costo(conexion, cantidad_vehiculos, vehiculo, carga): #funcion GENERAL para calcular el costo de un tipo de vehiculo especifico para una conexion especifica
-        costo_x_km = vehiculo.costo_km
-        costo_fijo = vehiculo.costo_fijo
-        costo_x_kg = vehiculo.costo_kg
         
         if isinstance(vehiculo, Tipo_transporte):
             costo_x_km = vehiculo.costo_km
@@ -81,23 +85,10 @@ class Planificador: #se instancia UNA VEZ.
             costo_x_kg = vehiculo.costo_kg
         else:
             raise ValueError("Tipo de transporte no reconocido")
-        
-        
-        costo_total = cantidad_vehiculos * (costo_fijo + costo_x_km * conexion.distancia + costo_x_kg * carga)
+        costo_total = (cantidad_vehiculos * (costo_fijo + costo_x_km * conexion.distancia)) + costo_x_kg * carga
         return costo_total 
         
-        
-        
-    
-    """"
-diccionario_rutas = {
-ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
-[Zarate,Azul,Mar_del_Plata]}
-}
-}
-"""
     def calcular_tiempo(conexion, vehiculo):
-
         distancia = conexion.distancia
 
         if isinstance(vehiculo, Tipo_transporte):
@@ -150,7 +141,6 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
                 else:
                     vehiculo=Fluvial()
                 
-                
             elif tipo_transporte=="Automotor":
                 
                 #MUY IMPORTANTE!!!!! HAY QUE PENSAR Y CAMBIAR ESTO
@@ -172,17 +162,7 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
             costo_total += Planificador.calcular_costo(conexion,cantidad_vehiculos,vehiculo, carga)
             tiempo_total += Planificador.calcular_tiempo(conexion, vehiculo)
         return costo_total,tiempo_total
-          
-    ''' 
-    def calcular_costo(self, distancia, peso): #funcion GENERAL para calcular el costo de un tipo de vehiculo especifico para una conexion especifica
-        cantidad = Tipo_transporte.cantidad_vehiculos(peso)  
-        costo_total= cantidad * (self.costo_fijo + self.costo_km * distancia + self.costo_kg * peso)
-        return costo_total 
-    
-    def cantidad_vehiculos(self, carga, capacidad): #cuantos vehiculos se necesitan para transportar esa carga EN ESA CONEXION 
-        cantidad = math.ceil(carga / capacidad)
-        return cantidad
-    '''
+        
     
     @staticmethod
     def determinar_vel(prob_mal_tiempo, velocidad_buen_tiempo = 600, velocidad_mal_tiempo = 400):
@@ -215,12 +195,9 @@ class Nodo:
         return None
 
 
-        
-    
     
 #DICCIONARIO: CLAVE 1 TIPO, CLAVE 2 NODO, CLAVE 3 DESTINO, lista (dist, restriccion, valor_restriccion)
 class Conexion: 
-    
     conexiones_por_tipo = {} #clave=tipo, valor=set de conexiones del tipo
     tipos = ("fluvial", "aerea", "automotor", "ferroviaria")
     restricciones_validas = {"velocidad_max", "peso_max", "tipo", "prob_mal_tiempo"}
@@ -262,9 +239,7 @@ class Conexion:
         )        
 
 class Tipo_transporte:
-    
     def __init__(self, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg): #lo de los costos hacer archivo csv CHEQUEAR LUCAS
-        
         if velocidad_nominal <= 0:
             ValueError("La velocidad no puede ser negativa")
         if capacidad_carga <= 0:
@@ -275,52 +250,19 @@ class Tipo_transporte:
         self.costo_km = costo_km
         self.costo_kg = costo_kg
     
-    # def cantidad_vehiculos(self,peso, carga): #cuantos vehiculos se necesitan para transportar esa carga EN ESA CONEXION 
-    #     cantidad = math.ceil(peso / carga)
-    #     return cantidad
-        
-    # def calcular_costo(self, distancia, peso): #funcion GENERAL para calcular el costo de un tipo de vehiculo especifico para una conexion especifica
-    #     cantidad = Tipo_transporte.cantidad_vehiculos(peso)  
-    #     costo_total= cantidad * (self.costo_fijo + self.costo_km * distancia + self.costo_kg * peso)
-    #     return costo_total
-
-    # def calcular_tiempo(self, distancia, tipo): #funcion GENERAL para calcular el tiempo de un tipo de vehiculo especifico para una conexion especifica
-    #     tiempo= distancia / self.velocidad_nominal 
-    #     return tiempo
-
 
 
 class Automotor(Tipo_transporte): # el codigo va a funcionar de tal manera que si se arranca una ruta con 8 automotores, Si se puede despues hacer con 10 automotores y despues 8 de vuelta en otra conexion
     def __init__(self,  velocidad_nominal=80, capacidad_carga= 30000, costo_fijo=30, costo_km= 5, costo_kg= 1):
         super().__init__(velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg)
 
-    # def cantidad_vehiculos(self, peso, capacidad, conexion):
-    #     if conexion.restriccion == "peso_max": #Si tiene la restriccion de peso maximo, entonces cada camion debe tener la minima entre el "peso maximo" y la capacidad del camion
-    #         cantidad = math.ceil(peso / min(float(conexion.valor_restriccion),capacidad)) 
-    #         return cantidad
-    #     return super().cantidad_vehiculos(peso,capacidad)
-    
-    # def calcular_costo(self, peso, conexion):
-    #     if conexion.restriccion == "peso_max":
-    #         if peso > float(conexion.valor_restriccion):
-    #             cantidad = self.cantidad_vehiculos(peso,self.capacidad_carga,conexion)
-    #             costo_total= cantidad * (self.costo_fijo + self.costo_km * conexion.distancia + self.costo_kg * peso)
-    #             return costo_total
-    #     return super().calcular_costo(conexion.distancia, peso)
-    
     
 class Aerea(Tipo_transporte):
     def __init__(self, velocidad_nominal = 600, capacidad_carga = 5000, costo_fijo = 750, costo_km = 40, costo_kg = 10, velocidad_mal_tiempo = 400):
         super().__init__(velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg)
         self.velocidad_mal_tiempo = velocidad_mal_tiempo
 
-    def calcular_tiempo(self, distancia, conexion):
-        velocidad = self.velocidad_nominal
-        if conexion.restriccion == "prob_mal_tiempo": #Calcular probabilidad de mal tiempo
-            return 
-            #return distancia/velocidad contemplando la probabilidad de mal tiempo
-        return super().calcular_tiempo(distancia,"aerea")
-  
+
   
 #   def calcular_velocidad_promedio_aerea_x_conexion(self, prob_mal_tiempo):
 #     if not (0 <= prob_mal_tiempo <= 1):
@@ -331,17 +273,8 @@ class Aerea(Tipo_transporte):
 #   def calcular_velocidad_nominal(self, prob_mal_tiempo1, prob_mal_tiempo2):
 #     velocidad_promedio_1 = Aerea.calcular_velocidad_promedio_aerea_x_conexion(prob_mal_tiempo1)
 #     velodidad_promedio_2 = Aerea.calcular_velocidad_promedio_aerea_x_conexion(prob_mal_tiempo2)
-
 #     velocidad_nominal = (velocidad_promedio_1 + velodidad_promedio_2)/2
-
 #     return velocidad_nominal
-
-
-
-  
-
-  
-
 class Fluvial(Tipo_transporte):
     def __init__(self, velocidad_nominal = 40, capacidad_carga = 100000, costo_fijo = 500, costo_km = 15, costo_kg = 2):
         super().__init__(velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg)
@@ -350,11 +283,6 @@ class Ferroviaria(Tipo_transporte):
     def __init__(self, velocidad_nominal = 100, capacidad_carga = 150000, costo_fijo = 100, costo_km = 20, costo_kg = 3):
         super().__init__(velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg)
         
-    # def calcular_tiempo(self, conexion):
-    #     velocidad = self.velocidad_nominal # Usamos la menor velocidad entre la nominal y la máxima de la vía
-    #     if conexion.restriccion == "velocidad_max":
-    #         velocidad = min(velocidad, float(conexion.valor_restriccion))
-    #     return conexion.distancia / velocidad
 
 
 class Solicitud_Transporte:
@@ -379,9 +307,6 @@ class Itinerario:
         self.optimizacion= optimizacion
         self.tipo_transporte = tipo_tranporte
         
-    
-    
-    
     def mostrar_resumen(self):
         return f"Itinerario hacia {self.destino} | Tramos: {len(self.secuencia_tramos)} | Tiempo: {self.tiempo} min | Costo: ${self.costo}"
 
@@ -389,9 +314,6 @@ class Itinerario:
 #ex-tobi: del dicc de encontrar_todas_rutas tengo que llamar a calcular_costos_tiempo para que le calcule el costo y tiempo a cada una de esas rutas. de todos esos tiemposy costos tengo que buscar la ruta con tiempo y costo mas bajo. 
 #diccionario con cada clave siendo cada tipo y cada valor siendo una lista de rutas (lista de listas).
 # Cada ruta es una lista de conexiones que hay entre los nodos. 
-
-  
-
 
 def testear_funciones(grafo, nombre_origen, nombre_destino):
     origen = Nodo.get_nombre(nombre_origen)

@@ -94,8 +94,10 @@ class Planificador: #se instancia UNA VEZ.
             else:
                 costo_x_kg = 2
         
-        costo_total= cantidad_vehiculos * (costo_fijo + costo_x_km * conexion.distancia + costo_x_kg * carga)
+        costo_total = cantidad_vehiculos * (costo_fijo + costo_x_km * conexion.distancia + costo_x_kg * carga)
         return costo_total 
+        
+        
         
     
     """"
@@ -177,19 +179,19 @@ class Nodo:
     
 #DICCIONARIO: CLAVE 1 TIPO, CLAVE 2 NODO, CLAVE 3 DESTINO, lista (dist, restriccion, valor_restriccion)
 class Conexion: 
+    
     conexiones_por_tipo = {} #clave=tipo, valor=set de conexiones del tipo
     tipos = ("fluvial", "aerea", "automotor", "ferroviaria")
     restricciones_validas = {"velocidad_max", "peso_max", "tipo", "prob_mal_tiempo"}
 
     def __init__(self, origen, destino, tipo, distancia, restriccion, valor_restriccion):
-        self.origen = origen
-        self.destino = destino
-       
-        
+
         if self.tipo not in Conexion.tipos:
             raise TypeError("El tipo de conexión es incorrecto.")
-        self.distancia = float(distancia)       
-        
+        self.origen = origen
+        self.destino = destino
+        self.tipo = tipo.strip().lower()
+        self.distancia = float(distancia)
         if restriccion:
             restriccion = restriccion.strip().lower()
             if restriccion not in Conexion.restricciones_validas:
@@ -198,13 +200,13 @@ class Conexion:
             self.valor_restriccion = valor_restriccion
         else:
             self.restriccion = None
-            self.valor_restriccion = None
+            self.valor_restriccion = None    
 
         if self.tipo not in Conexion.conexiones_por_tipo:
             Conexion.conexiones_por_tipo[self.tipo] = {self}
         else:
             Conexion.conexiones_por_tipo[self.tipo].add(self)
-        self.tipo = tipo.strip().lower()
+            
     def __str__(self):
         return f"De {self.origen} a {self.destino}. Tipo: {self.tipo}"
 
@@ -222,9 +224,9 @@ class Tipo_transporte:
     
     def __init__(self, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg): #lo de los costos hacer archivo csv CHEQUEAR LUCAS
         
-        if velocidad_nominal<= 0:
+        if velocidad_nominal <= 0:
             ValueError("La velocidad no puede ser negativa")
-        if capacidad_carga<= 0:
+        if capacidad_carga <= 0:
             ValueError("La capacidad de carga no puede ser negativa")
         self.velocidad_nominal=velocidad_nominal
         self.capacidad_carga=capacidad_carga
@@ -241,7 +243,7 @@ class Tipo_transporte:
     #     costo_total= cantidad * (self.costo_fijo + self.costo_km * distancia + self.costo_kg * peso)
     #     return costo_total
 
-    # def calcular_tiempo(self, distancia, tipo): #funcion GENERAL para calcular el costo de un tipo de vehiculo especifico para una conexion especifica
+    # def calcular_tiempo(self, distancia, tipo): #funcion GENERAL para calcular el tiempo de un tipo de vehiculo especifico para una conexion especifica
     #     tiempo= distancia / self.velocidad_nominal 
     #     return tiempo
 

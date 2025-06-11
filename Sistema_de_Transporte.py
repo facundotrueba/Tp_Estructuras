@@ -107,13 +107,47 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
 }
 }
 """
+def calcular_tiempo(conexion, vehiculo):
+    """
+    Calcula el tiempo en horas para una conexión específica usando el tipo de transporte adecuado.
+    
+    Args:
+        conexion (Conexion): objeto que contiene distancia, tipo, y restricciones.
+        tipo_transporte (objeto Vehiculo): instancia de la clase correspondiente.
 
-    def analisis_costo_tiempo(diccionario_rutas,peso,tipo_transporte):# el diccionario_rutas es un diccionario de encontrar_todas_rutas
+    Returns:
+        float: tiempo estimado en horas.
+    """
+    distancia = conexion.distancia
+
+    if isinstance(vehiculo, Aereo):
+        if conexion.restriccion == 'prob_mal_tiempo':
+             prob = float(conexion.valor_restriccion)
+             velocidad = determinar_velocidad(prob)
+        else:
+             velocidad = 600
+    else:
+        velocidad = vehiculo.velocidad
+        isinstance(vehiculo, Automotor):
+        velocidad = 80
+    elif isinstance(vehiculo, Ferroviaria):
+        velocidad = 100
+        if conexion.restriccion == "velocidad_max":
+            velocidad = min(velocidad, float(conexion.valor_restriccion))
+    elif isinstance(vehiculo, Maritimo):
+        velocidad = 40
+    else:
+        raise ValueError("Tipo de transporte no reconocido")
+    
+    tiempo_total = distancia / velocidad
+
+    return tiempo_total
+    def analisis_costo_tiempo(self, diccionario_rutas,peso,tipo_transporte):# el diccionario_rutas es un diccionario de encontrar_todas_rutas
         lista_costo = []
         lista_tiempo = []
         lista_rutas = []
         for ruta in diccionario_rutas.values() :
-            costo_total, tiempo_total = Planificador.calcular_costo_tiempo(ruta,peso,tipo_transporte)
+            costo_total, tiempo_total = Planificador.calcular_costo_tiempo(ruta,carga,tipo_transporte)
             lista_rutas.append(ruta)
             lista_costo.append(costo_total)
             lista_tiempo.append(tiempo_total)
@@ -123,14 +157,24 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
         ruta_menor_tiempo = lista_rutas[Planificador.indice_mas_bajo(lista_tiempo)]
         return menor_costo, ruta_menor_costo, menor_tiempo, ruta_menor_tiempo
     
-    def calcular_costo_tiempo(ruta,carga,tipo_transporte): # ruta es lista de conexiones. #ruta= [zarate->bsas, bsas->mdp] cada uno es un objeto conexion
+    def calcular_costo_tiempo(self, ruta,carga,tipo_transporte): # ruta es lista de conexiones. #ruta= [zarate->bsas, bsas->mdp] cada uno es un objeto conexion
         costo_total = 0
         tiempo_total = 0
+        
+            
+            
         cantidad_vehiculos = Planificador.cantidad_vehiculos(ruta, tipo_transporte, carga)
         for conexion in ruta:
-            distancia = conexion.distancia
-            costo_total += Planificador.calcular_costo(conexion,cantidad_vehiculos,tipo_transporte, carga)
-            tiempo_total += Planificador.calcular_tiempo(distancia,tipo_transporte)
+            if tipo_transporte="Aereo":  #CHEQUEAR COMO SE ESCRIBEN LOS STRINGS ESTOS
+            vehiculo=Aereo()
+            elif tipo_transporte="Fluvial":
+                vehiculo=Fluvial()
+            elif tipo_transporte="Automotor":
+                vehiculo=Automotor() 
+            elif tipo_transporte="Ferroviario":
+                
+            costo_total += Planificador.calcular_costo(conexion,cantidad_vehiculos,vehiculo, carga)
+            tiempo_total += Planificador.calcular_tiempo(conexion,tipo_transporte)
         return costo_total,tiempo_total
           
     ''' 
@@ -252,7 +296,6 @@ class Tipo_transporte:
 class Automotor(Tipo_transporte): # el codigo va a funcionar de tal manera que si se arranca una ruta con 8 automotores, Si se puede despues hacer con 10 automotores y despues 8 de vuelta en otra conexion
     def __init__(self,  velocidad_nominal=80, capacidad_carga= 30000, costo_fijo=30, costo_km= 5, costo_kg= 1):
         super().__init__(velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg)
-
 
     # def cantidad_vehiculos(self, peso, capacidad, conexion):
     #     if conexion.restriccion == "peso_max": #Si tiene la restriccion de peso maximo, entonces cada camion debe tener la minima entre el "peso maximo" y la capacidad del camion

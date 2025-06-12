@@ -65,16 +65,15 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
 }
 """
     def cantidad_vehiculos(self, ruta, vehiculo, carga): #ruta es una lista de conexiones
-        if isinstance(vehiculo, Automotor) and conexion.restriccion != None: #carga es la carga que se quiere transportar, capaciad es el peso maximo del vehiculo
+        if isinstance(vehiculo, Automotor) : #carga es la carga que se quiere transportar, capacidad es el peso maximo del vehiculo
             capacidades_posibles=[]
             for conexion in ruta:
                 if conexion.restriccion == "peso_max": #Si tiene la restriccion de peso maximo, entonces cada camion debe tener la minima entre el "peso maximo" y la capacidad del camion
                     cantidad = math.ceil(carga / min(float(conexion.valor_restriccion),vehiculo.capacidad)) 
                     capacidades_posibles.append(cantidad)
-            return max(capacidades_posibles)
-        else: 
-            cantidad_vehiculos = math.ceil(carga / vehiculo.capacidad) 
-            return cantidad_vehiculos
+            if capacidades_posibles:
+                return max(capacidades_posibles)
+        return math.ceil(carga / vehiculo.capacidad)
             
     
     def calcular_costo(conexion, cantidad_vehiculos, vehiculo, carga): #funcion GENERAL para calcular el costo de un tipo de vehiculo especifico para una conexion especifica
@@ -160,7 +159,8 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
                         vehiculo=Ferroviaria(velocidad,costo_x_km = 20)
                     else:
                         vehiculo=Ferroviaria(velocidad,costo_x_km = 15)
-                
+                else:
+                    vehiculo=Ferroviaria()
             costo_total += Planificador.calcular_costo(conexion,cantidad_vehiculos,vehiculo, carga)
             tiempo_total += Planificador.calcular_tiempo(conexion, vehiculo)
         return costo_total,tiempo_total,tipo_transporte

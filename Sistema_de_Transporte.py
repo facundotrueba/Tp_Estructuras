@@ -1,6 +1,8 @@
-import csv
+
 import math
 import random
+import matplotlib.pyplot as plt
+import numpy as np
 
 class Planificador: #se instancia UNA VEZ.
     
@@ -81,16 +83,33 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
              raise ValueError("Tipo de transporte no reconocido")
         costo_x_km = vehiculo.costo_km
         costo_fijo = vehiculo.costo_fijo
-        costo_x_kg = vehiculo.costo_kg
-        if isinstance(vehiculo,Automotor):
-            if carga % min(float(conexion.valor_restriccion),vehiculo.capacidad)>15000:
-                costo_total = (cantidad_vehiculos * (costo_fijo + costo_x_km * conexion.distancia)) + costo_x_kg * carga
-            else:
-                costo_total = (cantidad_vehiculos * (costo_fijo + costo_x_km * conexion.distancia)) + costo_x_kg * carga + carga%min(float(conexion.valor_restriccion),vehiculo.capacidad)
+         # CASO AUTOMOTOR: costo por kg depende de la carga por vehículo
+        if isinstance(vehiculo, Automotor):
+            # Determinar la capacidad máxima real por vehículo (limitada por conexión si aplica)
+            capacidad_max_por_vehiculo = vehiculo.capacidad
+            if conexion.restriccion == "peso_max":
+                capacidad_max_por_vehiculo = min(vehiculo.capacidad, float(conexion.valor_restriccion))
+
+            carga_restante = carga
+            costo_variable_total = 0
+
+            # Repartir la carga en vehículos y calcular el costo por kg de cada uno
+            while carga_restante > 0:
+                carga_vehiculo = min(capacidad_max_por_vehiculo, carga_restante)
+    
+                # Determinar el costo por kg según carga del automotor
+                costo_kg = 2 if carga_vehiculo > 15000 else 1
+                # Sumar costo de esta parte
+                costo_variable_total += carga_vehiculo * costo_kg
+                carga_restante -= carga_vehiculo
+            # Costo total = fijos por cada vehículo + variable por kg
+            costo_total = cantidad_vehiculos * (costo_fijo + costo_x_km * conexion.distancia) + costo_variable_total
+
+            # CASO GENERAL (no automotor): aplicar costo fijo por kg
         else:
-            costo_total = (cantidad_vehiculos * (costo_fijo + costo_x_km * conexion.distancia)) + costo_x_kg * carga
-        return costo_total 
-        
+            costo_total = (cantidad_vehiculos * (costo_fijo + costo_x_km * conexion.distancia)) + vehiculo.costo_kg * carga
+        return costo_total
+            
     def calcular_tiempo(conexion, vehiculo):
         distancia = conexion.distancia
 
@@ -182,6 +201,7 @@ class Nodo:
     def __init__(self, nombre):
         self.nombre = nombre
         Nodo.lista_nodos.append(self)
+        self.tipos_disponibles = set()#almacena el tipo disponible de nodo
         
     def __str__(self):
         return self.nombre
@@ -221,6 +241,9 @@ class Conexion:
         else:
             self.restriccion = None
             self.valor_restriccion = None    
+
+        self.origen.tipos_disponibles.add(self.tipo)#agrega los tipos al nodo
+        self.destino.tipos_disponibles.add(self.tipo)
 
         if self.tipo not in Conexion.conexiones_por_tipo:
             Conexion.conexiones_por_tipo[self.tipo] = {self}
@@ -265,18 +288,6 @@ class Aerea(Tipo_transporte):
         self.velocidad_mal_tiempo = velocidad_mal_tiempo
 
 
-  
-#   def calcular_velocidad_promedio_aerea_x_conexion(self, prob_mal_tiempo):
-#     if not (0 <= prob_mal_tiempo <= 1):
-#         raise ValueError("La probabilidad debe estar entre 0 y 1.")
-#     velocidad_promedio = self.velocidad_nominal * (1 - prob_mal_tiempo) + self.velocidad_mal_tiempo * prob_mal_tiempo
-#     return velocidad_promedio
-  
-#   def calcular_velocidad_nominal(self, prob_mal_tiempo1, prob_mal_tiempo2):
-#     velocidad_promedio_1 = Aerea.calcular_velocidad_promedio_aerea_x_conexion(prob_mal_tiempo1)
-#     velodidad_promedio_2 = Aerea.calcular_velocidad_promedio_aerea_x_conexion(prob_mal_tiempo2)
-#     velocidad_nominal = (velocidad_promedio_1 + velodidad_promedio_2)/2
-#     return velocidad_nominal
 class Fluvial(Tipo_transporte):
     def __init__(self, velocidad_nominal = 40, capacidad_carga = 100000, costo_fijo = 500, costo_km = 15, costo_kg = 2):
         super().__init__(velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg)
@@ -301,16 +312,64 @@ class Solicitud_Transporte:
         
 
 class Itinerario:
-    def __init__(self, id_solicitud, secuencia_tramos, costo, tiempo, optimizacion,tipo_tranporte):#revisar este print
+    def __init__(self, id_solicitud, ruta, costo, tiempo, optimizacion, vehiculo, cantidad_vehiculos, carga):#revisar este print
         self.id_solicitud =id_solicitud
-        self.secuencia_tramos=secuencia_tramos
+        self.ruta=ruta
         self.costo=costo
         self.tiempo=tiempo
         self.optimizacion= optimizacion
-        self.tipo_transporte = tipo_tranporte
+        self.vehiculo = vehiculo
+    
+    def calcular_arrays_distancia_tiempo_acumulados(self, vehiculo):
+        distancias = []
+        tiempos = []
+        distancia_acum = 0
+        tiempo_acum = 0
+
+        for conexion in self.ruta: 
+            distancia_acum += conexion.distancia
+            tiempo_conexion = Planificador.calcular_tiempo(conexion, vehiculo)
+            tiempo_acum += tiempo_conexion
+            distancias.append(distancia_acum)
+            tiempos.append(tiempo_acum)
+        
+        return np.array(distancias), np.array(tiempos)
+    
+    def graficar_distancia_vs_tiempo(self,vehiculo):
+        distancias, tiempos = self.calcular_arrays_distancia_tiempo_acumulados(vehiculo)
+        plt.plot(tiempos, distancias, marker="o")
+        plt.xlabel("Tiempo acumulado (h)")
+        plt.ylabel("Distancia acumulada (km)")
+        plt.title("Distancia Acumulada vs. Tiempo Acumulado")
+        plt.grid(True)
+        plt.show()
+    
+    def calcular_arrays_costo_distancia_acumulada(self, vehiculo):
+        costos = []
+        distancias = []
+        costo_acum = 0
+        distancia_acum = 0
+        
+        for conexion in self.ruta:
+            costo_conexion = Planificador.calcular_costo(conexion, self.cantidad_vehiculos, vehiculo, self.carga)
+            costo_acum += costo_conexion
+            distancia_acum += conexion.distancia
+            costos.append(costo_acum)
+            distancias.append(distancia_acum)
+            
+        return np.array(costos), np.array(distancias)
+       
+    def graficar_costo_vs_distancia(self,vehiculo):
+        costos, distancias = self.calcular_arrays_costo_distancia_acumulada(vehiculo)
+        plt.plot(distancias, costos, marker="o")
+        plt.xlabel("Distancia acumulada (km)")
+        plt.ylabel("Costo acumulado ($)")
+        plt.title("Costo Acumulado vs. Distancia Acumulada")
+        plt.grid(True)
+        plt.show()
         
     def mostrar_resumen(self):
-        return f"Itinerario hacia {self.destino} | Tramos: {len(self.secuencia_tramos)} | Tiempo: {self.tiempo} min | Costo: ${self.costo}"
+        return f"Itinerario: {self.ruta} | cantidad de conexion: {len(self.ruta)} | Tiempo: {self.tiempo} min | Costo: ${self.costo}"
 
     
 #ex-tobi: del dicc de encontrar_todas_rutas tengo que llamar a calcular_costos_tiempo para que le calcule el costo y tiempo a cada una de esas rutas. de todos esos tiemposy costos tengo que buscar la ruta con tiempo y costo mas bajo. 

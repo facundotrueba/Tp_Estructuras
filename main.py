@@ -1,5 +1,6 @@
 import Sistema_de_Transporte 
-import probar
+import auxiliar
+
 #import todo
 
 Autito=Sistema_de_Transporte.Automotor()

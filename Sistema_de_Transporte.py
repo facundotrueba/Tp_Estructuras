@@ -78,24 +78,26 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
             
     
     def calcular_costo(conexion, cantidad_vehiculos, vehiculo, carga): #funcion GENERAL para calcular el costo de un tipo de vehiculo especifico para una conexion especifica
-        
-        if isinstance(vehiculo, Tipo_transporte):
-            costo_x_km = vehiculo.costo_km
-            costo_fijo = vehiculo.costo_fijo
-            costo_x_kg = vehiculo.costo_kg
+        if not isinstance(vehiculo, Tipo_transporte):
+             raise ValueError("Tipo de transporte no reconocido")
+        costo_x_km = vehiculo.costo_km
+        costo_fijo = vehiculo.costo_fijo
+        costo_x_kg = vehiculo.costo_kg
+        if isinstance(vehiculo,Automotor):
+            if carga % min(float(conexion.valor_restriccion),vehiculo.capacidad)>15000:
+                costo_total = (cantidad_vehiculos * (costo_fijo + costo_x_km * conexion.distancia)) + costo_x_kg * carga
+            else:
+                costo_total = (cantidad_vehiculos * (costo_fijo + costo_x_km * conexion.distancia)) + costo_x_kg * carga + carga%min(float(conexion.valor_restriccion),vehiculo.capacidad)
         else:
-            raise ValueError("Tipo de transporte no reconocido")
-        costo_total = (cantidad_vehiculos * (costo_fijo + costo_x_km * conexion.distancia)) + costo_x_kg * carga
+            costo_total = (cantidad_vehiculos * (costo_fijo + costo_x_km * conexion.distancia)) + costo_x_kg * carga
         return costo_total 
         
     def calcular_tiempo(conexion, vehiculo):
         distancia = conexion.distancia
 
-        if isinstance(vehiculo, Tipo_transporte):
-            velocidad = vehiculo.velocidad_nominal
-        else:
+        if not isinstance(vehiculo, Tipo_transporte):
             raise ValueError("Tipo de transporte no reconocido")
-        
+        velocidad = vehiculo.velocidad_nominal
         tiempo_total = distancia / velocidad
 
         return tiempo_total
@@ -105,16 +107,24 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
         lista_costo = []
         lista_tiempo = []
         lista_rutas = []
+        lista_tipos=[]
         for ruta in diccionario_rutas.values() :
-            costo_total, tiempo_total = Planificador.calcular_costo_tiempo(ruta,carga,tipo_transporte)
+            costo_total, tiempo_total,tipo = Planificador.calcular_costo_tiempo(ruta,carga,tipo_transporte)
             lista_rutas.append(ruta)
             lista_costo.append(costo_total)
             lista_tiempo.append(tiempo_total)
+            lista_tipos.append(tipo)
+
         menor_costo = lista_costo[Planificador.indice_mas_bajo(lista_costo)]
         ruta_menor_costo = lista_rutas[Planificador.indice_mas_bajo(lista_costo)]
+        tiempo_menor_costo = lista_tiempo[Planificador.indice_mas_bajo(lista_costo)]
+        tipo_menor_costo = lista_tipos[Planificador.indice_mas_bajo(lista_costo)]
+
         menor_tiempo = lista_tiempo[Planificador.indice_mas_bajo(lista_tiempo)]
         ruta_menor_tiempo = lista_rutas[Planificador.indice_mas_bajo(lista_tiempo)]
-        return menor_costo, ruta_menor_costo, menor_tiempo, ruta_menor_tiempo
+        costo_menor_tiempo = lista_costo[Planificador.indice_mas_bajo(lista_tiempo)]
+        tipo_menor_tiempo = lista_tipos[Planificador.indice_mas_bajo(lista_tiempo)]
+        return menor_costo,tiempo_menor_costo,ruta_menor_costo,tipo_menor_costo, menor_tiempo, costo_menor_tiempo, ruta_menor_tiempo,tipo_menor_tiempo
     
     def calcular_costo_tiempo(self, ruta,carga,tipo_transporte): # ruta es lista de conexiones. #ruta= [zarate->bsas, bsas->mdp] cada uno es un objeto conexion
         costo_total = 0
@@ -124,7 +134,6 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
         
         for conexion in ruta:
             if tipo_transporte=="Aerea":  #CHEQUEAR COMO SE ESCRIBEN LOS STRINGS ESTOS
-                
                 if conexion.restriccion == 'prob_mal_tiempo':
                     prob = float(conexion.valor_restriccion)
                     velocidad = Planificador.determinar_vel(prob)
@@ -133,7 +142,6 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
                     vehiculo=Aerea()
                     
             elif tipo_transporte=="Fluvial":
-                
                 if conexion.valor_restriccion.lower() == "fluvial":
                     vehiculo=Fluvial(costo_fijo = 500)
                 elif conexion.valor_restriccion.lower() == "maritima":
@@ -142,16 +150,10 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
                     vehiculo=Fluvial()
                 
             elif tipo_transporte=="Automotor":
+                vehiculo=Automotor(costo_x_kg=2)              
                 
-                #MUY IMPORTANTE!!!!! HAY QUE PENSAR Y CAMBIAR ESTO
-                if carga < 15000:
-                    vehiculo=Automotor(costo_x_kg=1)
-                else:
-                    vehiculo=Automotor(costo_x_kg=2)              
-                #esto esta mal!!!!! PARA TODOS LOS TIPOS ESTA BIEN PERO PARA ESTE JUSTO ME QUEDO UNA DUDA MINIMA
                 
-            elif tipo_transporte=="Ferroviaria":
-                
+            elif tipo_transporte == "Ferroviaria":
                 if conexion.restriccion == 'velocidad_max':
                     velocidad = min(100, float(conexion.valor_restriccion))
                     if conexion.distancia < 200:
@@ -161,7 +163,7 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
                 
             costo_total += Planificador.calcular_costo(conexion,cantidad_vehiculos,vehiculo, carga)
             tiempo_total += Planificador.calcular_tiempo(conexion, vehiculo)
-        return costo_total,tiempo_total
+        return costo_total,tiempo_total,tipo_transporte
         
     
     @staticmethod

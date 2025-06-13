@@ -226,7 +226,7 @@ class Conexion:
 
     def __init__(self, origen, destino, tipo, distancia, restriccion, valor_restriccion):
 
-        if self.tipo not in Conexion.tipos:
+        if tipo not in Conexion.tipos:
             raise TypeError("El tipo de conexión es incorrecto.")
         self.origen = origen
         self.destino = destino
@@ -240,10 +240,10 @@ class Conexion:
             self.valor_restriccion = valor_restriccion
         else:
             self.restriccion = None
-            self.valor_restriccion = None    
+            self.valor_restriccion = None
 
-        self.origen.tipos_disponibles.add(self.tipo)#agrega los tipos al nodo
-        self.destino.tipos_disponibles.add(self.tipo)
+        Nodo.get_nombre(self.origen).tipos_disponibles.add(self.tipo)#agrega los tipos al nodo
+        Nodo.get_nombre(self.destino).tipos_disponibles.add(self.tipo)
 
         if self.tipo not in Conexion.conexiones_por_tipo:
             Conexion.conexiones_por_tipo[self.tipo] = {self}
@@ -261,7 +261,11 @@ class Conexion:
             self.distancia == other.distancia and
             self.restriccion == other.restriccion and
             self.valor_restriccion == other.valor_restriccion
-        )        
+        )
+        
+
+    def __hash__(self): #PREGUNTAR A FEDE, si no esta explota
+        return hash((self.origen, self.destino, self.tipo, self.distancia, self.restriccion, self.valor_restriccion))
 
 class Tipo_transporte:
     def __init__(self, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg): #lo de los costos hacer archivo csv CHEQUEAR LUCAS
@@ -401,15 +405,3 @@ def testear_funciones(grafo, nombre_origen, nombre_destino):
             if len(nodos_en_ruta) != len(set(nodos_en_ruta)):
                 print("    ❌ Error: Se repite algún nodo.")
 
-
-'''
-Agregar capacidad multimodal en la clase nodo
-Agregar validaciones (Preguntar)
-Cambiar calculo de costos teniendo en cuenta que hay que llenar cada camion antes de empezar a cargar el proximo (corregir)
-Calcular velocidad
-Revisar print Itinerario
-hacer gráficos
-Mandar tiempo y costos en las dos rutas posibles (tiempo en la optimizada por costo y costo en la optimizada por tiempo)
-Hacer main
-
-'''

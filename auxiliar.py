@@ -18,8 +18,8 @@ def leer_csv(nombre_archivo):
 def cargar_nodos(nombre_archivo):
     datos = leer_csv(nombre_archivo)
     for i in datos:
-        if i and i[0].strip():
-            Sistema_de_Transporte.Nodo(i[0].strip())
+        if i and i[0].strip().lower():
+            Sistema_de_Transporte.Nodo(i[0].strip().lower())
             
 def cargar_conexiones(nombre_archivo):
     datos = leer_csv(nombre_archivo)
@@ -44,7 +44,6 @@ def cargar_solicitudes(nombre_archivo):
     datos = leer_csv(nombre_archivo)
     for i in datos:
         Sistema_de_Transporte.Solicitud_Transporte(i[0], i[1], i[2], i[3])
-
 
 def inicializar_sistema(nodos_path, conexiones_path):
     cargar_nodos(nodos_path)

@@ -371,6 +371,29 @@ class Itinerario:
         plt.title("Costo Acumulado vs. Distancia Acumulada")
         plt.grid(True)
         plt.show()
+    
+    def calcular_arrays_costo_tiempo_acumulado(self, vehiculo):
+        costos = []
+        tiempos = []
+        costo_acum = 0
+        tiempo_acum = 0
+        for conexion in self.ruta:
+            costo_conexion = Planificador.calcular_costo(conexion, self.cantidad_vehiculos, vehiculo, self.carga)
+            costo_acum += costo_conexion
+            tiempo_conexion = Planificador.calcular_tiempo(conexion, vehiculo)
+            tiempo_acum += tiempo_conexion
+            costos.append(costo_acum)
+            tiempos.append(tiempo_acum)
+        return np.array(costos), np.array(tiempos)
+
+    def graficar_costo_vs_tiempo(self, vehiculo):
+        costos, tiempos = self.calcular_arrays_costo_tiempo_acumulado(vehiculo)
+        plt.plot(tiempos, costos, marker="o")
+        plt.xlabel("Tiempo acumulado (h)")
+        plt.ylabel("Costo acumulado ($)")
+        plt.title("Costo Acumulado vs. Tiempo Acumulado")
+        plt.grid(True)
+        plt.show()
         
     def mostrar_resumen(self):
         return f"Itinerario: {self.ruta} | cantidad de conexion: {len(self.ruta)} | Tiempo: {self.tiempo} min | Costo: ${self.costo}"

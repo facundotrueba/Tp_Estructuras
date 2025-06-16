@@ -5,7 +5,7 @@ import auxiliar
 def leer_csv(nombre_archivo):
     datos = []
     try:
-        with open(nombre_archivo, mode="r") as file:
+        with open(nombre_archivo, mode="r",encoding="utf-8") as file:
             lector = csv.reader(file)
             next(lector) 
             for fila in lector:
@@ -118,16 +118,105 @@ def cargar_conexiones(nombre_archivo):
             Sistema_de_Transporte.Conexion(conexion[0],conexion[1],conexion[2],conexion[3],conexion[4],conexion[5])
             Sistema_de_Transporte.Conexion(conexion[1],conexion[0],conexion[2],conexion[3],conexion[4],conexion[5])
 
+def validar_nodo(entrada):
+    """
+    Valida que la entrada para un nodo sea un string válido y no esté duplicado.
+    """
+    if not isinstance(entrada, str):
+        raise TypeError("El nombre del nodo debe ser un string.")
+
+    nombre = entrada.strip().lower()
+
+    if nombre == "":
+        raise ValueError("El nombre del nodo no puede estar vacío.")
+
+    if Sistema_de_Transporte.Nodo.get_nombre(nombre) is not None:
+        raise ValueError(f"El nodo '{nombre}' ya fue cargado.")
+
+    return nombre
+
 def cargar_nodos(nombre_archivo):
     datos = leer_csv(nombre_archivo)
-    for i in datos:
-        if i and i[0].strip().lower():
-            Sistema_de_Transporte.Nodo(i[0].strip().lower())
+    for fila in datos:
+        if fila:  # chequea que no esté vacía
+            try:
+                nombre = validar_nodo(fila[0])
+                Sistema_de_Transporte.Nodo(nombre)
+            except (TypeError, ValueError) as e:
+                print(f"Error al cargar nodo '{fila[0]}': {e}")
+
+# def cargar_nodos(nombre_archivo):
+#     datos = leer_csv(nombre_archivo)
+#     for i in datos:
+#         if i and i[0].strip().lower():
+#             Sistema_de_Transporte.Nodo(i[0].strip().lower())
             
+# para validar nodos solamente q sean str y hacer funcion validar nodos donde lo hagas y que no esten
+# ya en la lista de nodos creados en la propia clase 
+            
+def validar_solicitud(fila):
+    if len(fila) != 4:
+        raise ValueError("La solicitud debe tener exactamente 4 campos: id_carga, peso_kg, origen, destino")
+
+    id_carga, peso, origen, destino = [x.strip() for x in fila]
+
+    # Validar ID
+    if not isinstance(id_carga, str):
+        raise TypeError("El ID de carga debe ser un string.")
+    
+    if not id_carga.startswith("CARGA_"):
+        raise ValueError(f"ID de carga inválido: {id_carga}")     # SACAR ESTA PORONGA Y QUE VALIDE QUE TODOS LOS IDS SEAN DISITNTOS Y CHAU
+    sufijo = id_carga[6:]
+    if not sufijo.isdigit():
+        raise ValueError(f"ID de carga debe terminar en número entero: {id_carga}")
+    if int(sufijo) <= 0:
+        raise ValueError("El número de ID de carga debe ser mayor a 0")
+
+    # Validar ID duplicado en cola
+    for solicitud in Sistema_de_Transporte.Solicitud_Transporte.cola_solicitudes:
+        if solicitud.id_carga == id_carga:
+            raise ValueError(f"Ya existe una solicitud con ID '{id_carga}'")
+
+    # Validar peso
+    try:
+        peso = float(peso)
+        if peso <= 0:
+            raise ValueError("El peso debe ser un número positivo")   #PROBAR ESTO
+    except:
+        raise TypeError("El peso debe ser un número (int o float)")
+
+    # Validar nodos
+    origen_nodo = Sistema_de_Transporte.Nodo.get_nombre(origen)
+    destino_nodo = Sistema_de_Transporte.Nodo.get_nombre(destino)
+
+    if origen_nodo is None:
+        raise ValueError(f"El nodo de origen '{origen}' no existe.")
+    if destino_nodo is None:
+        raise ValueError(f"El nodo de destino '{destino}' no existe.")
+    if origen_nodo == destino_nodo:
+        raise ValueError("El nodo de origen y destino no pueden ser el mismo.")
+
+    return id_carga, peso, origen_nodo, destino_nodo
+
+
 def cargar_solicitudes(nombre_archivo):
     datos = leer_csv(nombre_archivo)
-    for i in datos:
-        Sistema_de_Transporte.Solicitud_Transporte(i[0], i[1], i[2], i[3])
+    for fila in datos:
+        try:
+            id_carga, peso, origen, destino = validar_solicitud(fila)
+            Sistema_de_Transporte.Solicitud_Transporte(id_carga, peso, origen, destino)
+        except (ValueError, TypeError) as e:
+            print(f"Error al cargar solicitud: {e}")
+            
+            
+# def cargar_solicitudes(nombre_archivo):
+#     datos = leer_csv(nombre_archivo)
+#     for i in datos:
+#         Sistema_de_Transporte.Solicitud_Transporte(i[0], i[1], i[2], i[3])
+
+# validar que peso que sea num int o float y positivo, que origen y destino antes que sea str
+# y luego isinstance nodos y que no sean el mismo, por ultimo, id_carga,
+# validar que los primeros 6 chars sean CARGA_ y despues que sea un numero int 
 
 
 # print(Sistema_de_Transporte.Nodo.lista_nodos)

@@ -17,7 +17,7 @@ class Conexion:
             restriccion = restriccion.strip().lower()
             if restriccion not in Conexion.restricciones_validas:
                 raise ValueError(f"Restricción no válida: {restriccion}")
-            self.restriccion = restriccion
+            self.restriccion = restriccion 
             self.valor_restriccion = valor_restriccion
         else:
             self.restriccion = None

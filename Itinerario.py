@@ -9,7 +9,6 @@ class Itinerario:
         self.cantidad_vehiculos=cantidad_vehiculos
         self.carga=carga
     
-        
     def mostrar_resumen(self):
         return f"Itinerario: {self.ruta} | cantidad de conexion: {len(self.ruta)} | Tiempo: {self.tiempo} min | Costo: ${self.costo}"
 

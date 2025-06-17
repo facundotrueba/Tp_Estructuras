@@ -1,8 +1,8 @@
 import csv
-import Sistema_de_Transporte
 import Nodo
 import Conexion
 import Solicitud
+#por ejemplo con nodo: cuando entro a Nodo para verificar que el nodo no exista todavia, eso no deberia ser un metodo de clase dentro de Nodo
 def leer_csv(nombre_archivo):
     datos = []
     try:
@@ -90,13 +90,18 @@ def validar_conexion(lista):
                     if not (lista[5] > 0):
                         raise ValueError(f'El valor de la restricción es inválido')
     return lista
-                                            
+                                     
 def cargar_conexiones(nombre_archivo):
     datos = leer_csv(nombre_archivo)
-    for i in datos:
-        conexion = validar_conexion(i)
-        Conexion.Conexion(conexion[0],conexion[1],conexion[2],conexion[3],conexion[4],conexion[5])
-        Conexion.Conexion(conexion[1],conexion[0],conexion[2],conexion[3],conexion[4],conexion[5])
+    for fila in datos:
+        if fila:
+            try:
+                conexion = validar_conexion(fila)
+                Conexion.Conexion(conexion[0],conexion[1],conexion[2],conexion[3],conexion[4],conexion[5])
+                Conexion.Conexion(conexion[1],conexion[0],conexion[2],conexion[3],conexion[4],conexion[5])
+                print('Conexiones cargadas exitosamente.')
+            except (TypeError, ValueError) as e:
+                print(f"Error al cargar conexiones '{fila[0]}': {e}")
 
 def validar_nodo(entrada):
     """
@@ -122,8 +127,11 @@ def cargar_nodos(nombre_archivo):
             try:
                 nombre = validar_nodo(fila[0])
                 Nodo.Nodo(nombre)
+                print('Nodos cargados exitosamente.')
             except (TypeError, ValueError) as e:
                 print(f"Error al cargar nodo '{fila[0]}': {e}")
+            
+                
 
 # def cargar_nodos(nombre_archivo):
 #     datos = leer_csv(nombre_archivo)
@@ -140,30 +148,15 @@ def validar_solicitud(fila):
 
     id_carga, peso, origen, destino = [x.strip() for x in fila]
 
-    # Validar ID
-    if not isinstance(id_carga, str):
-        raise TypeError("El ID de carga debe ser un string.")
-    
-    if not id_carga.startswith("CARGA_"):
-        raise ValueError(f"ID de carga inválido: {id_carga}")     # SACAR ESTA PORONGA Y QUE VALIDE QUE TODOS LOS IDS SEAN DISITNTOS Y CHAU
-    sufijo = id_carga[6:]
-    if not sufijo.isdigit():
-        raise ValueError(f"ID de carga debe terminar en número entero: {id_carga}")
-    if int(sufijo) <= 0:
-        raise ValueError("El número de ID de carga debe ser mayor a 0")
-
     # Validar ID duplicado en cola
     for solicitud in Solicitud.Solicitud_Transporte.cola_solicitudes:
         if solicitud.id_carga == id_carga:
             raise ValueError(f"Ya existe una solicitud con ID '{id_carga}'")
 
     # Validar peso
-    try:
-        peso = float(peso)
-        if peso <= 0:
-            raise ValueError("El peso debe ser un número positivo")   #PROBAR ESTO
-    except:
-        raise TypeError("El peso debe ser un número (int o float)")
+    peso = float(peso)
+    if peso <= 0:
+        raise ValueError("El peso debe ser un número positivo")   #PROBAR ESTO
 
     # Validar nodos
     origen_nodo = Nodo.Nodo.get_nombre(origen)
@@ -182,34 +175,14 @@ def validar_solicitud(fila):
 def cargar_solicitudes(nombre_archivo):
     datos = leer_csv(nombre_archivo)
     for fila in datos:
-        try:
-            id_carga, peso, origen, destino = validar_solicitud(fila)
-            Solicitud.Solicitud_Transporte(id_carga, peso, origen, destino)
-        except (ValueError, TypeError) as e:
-            print(f"Error al cargar solicitud: {e}")
-            
-            
-# def cargar_solicitudes(nombre_archivo):
-#     datos = leer_csv(nombre_archivo)
-#     for i in datos:
-#         Sistema_de_Transporte.Solicitud_Transporte(i[0], i[1], i[2], i[3])
-
-# validar que peso que sea num int o float y positivo, que origen y destino antes que sea str
-# y luego isinstance nodos y que no sean el mismo, por ultimo, id_carga,
-# validar que los primeros 6 chars sean CARGA_ y despues que sea un numero int 
-
-
-# print(Sistema_de_Transporte.Nodo.lista_nodos)
-
-
-# l = validar_conexion(l)
-# print (l)
-
-
-
-
-
-
+        if fila:
+            try:
+                id_carga, peso, origen, destino = validar_solicitud(fila)
+                Solicitud.Solicitud_Transporte(id_carga, peso, origen, destino)
+                print('Solicitudes cargadas exitosamente.')
+            except (ValueError, TypeError) as e:
+                print(f"Error al cargar solicitud: {e}")
+                
 '''
 Pensar funciones agregar/borrar conexiones, nodos, vehiculos
 Esto se agregaria en los inits (en este caso se sacaria de cargar_conexiones pero sirve para una futura funcion de agregar conexion)

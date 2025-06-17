@@ -1,31 +1,27 @@
-#import todoooo
+
 import random
-from collections import deque
 import Conexion
 import Solicitud
 import Sistema_de_Transporte
 import math
-
 class Planificador: #se instancia UNA VEZ.
-    
-    
+    def __init__(self, nombre):
+        self.nombre=nombre
+        print(f"Planificador: {self.nombre}")
+
     def procesar_siguiente(self):
         """
         Desencola y retorna la siguiente solicitud.
         """
         if not Solicitud.Solicitud_Transporte.cola_solicitudes:
             print("No hay solicitudes pendientes.")
-            return None, None
+            return None, None, None
         solicitud = Solicitud.Solicitud_Transporte.cola_solicitudes.popleft()
         grafo=self.construir_grafo(Conexion.Conexion.conexiones_por_tipo)
         dic_rutas=self.encontrar_todas_rutas(grafo,solicitud.origen, solicitud.destino)
         tupla_menor_costo, tupla_menor_tiempo=self.analisis_costo_tiempo(dic_rutas,solicitud.peso_kg) #las tuplas van: (costo,tiempo,ruta,tipo)
-                                          
-        
-        
         return solicitud.id_carga,tupla_menor_costo, tupla_menor_tiempo
-    
-
+    @staticmethod
     def construir_grafo(diccionario):
         grafo = {}
         for conexiones in diccionario.values():
@@ -34,7 +30,7 @@ class Planificador: #se instancia UNA VEZ.
                     grafo[conexion.origen] = []
                 grafo[conexion.origen].append(conexion)
         return grafo #devuelve el grafo usado en  encontrar todas rutas
-        
+    @staticmethod   
     def encontrar_todas_rutas(grafo, nodo_inicio, nodo_fin):
         rutas_por_tipo = {}
         for tipo in Conexion.Conexion.tipos:
@@ -42,7 +38,7 @@ class Planificador: #se instancia UNA VEZ.
             if rutas:
                 rutas_por_tipo[tipo] = rutas
         return rutas_por_tipo #esto si devuelve un diccionario con cada clave siendo cada tipo y cada valor siendo una lista de rutas (lista de listas).
-
+    @staticmethod
     def encontrar_rutas_tipo(grafo, nodo_inicio, nodo_fin, tipo, camino_actual=None, nodos_visitados=None):
         if camino_actual is None:
             camino_actual = []
@@ -61,32 +57,21 @@ class Planificador: #se instancia UNA VEZ.
                 nuevos_visitados.add(conexion.destino)
                 rutas += Planificador.encontrar_rutas_tipo(grafo, nodo_inicio, nodo_fin, tipo, nuevo_camino, nuevos_visitados) #va self?
         return rutas  #esto devuielve una lista de rutas (lista de listas). Cada ruta es una lista de conexiones que hay entre los nodos. 
-
+    @staticmethod
     def indice_mas_bajo(lista):
         if not lista:
             raise ValueError("La lista está vacía")
         return min(range(len(lista)), key=lambda i: lista[i])
     
-
+    @staticmethod
     def es_conexion_valida(conexion, tipo, nodo_actual, nodos_visitados):
         return (
             conexion.tipo == tipo and
             conexion.origen == nodo_actual and
             conexion.destino not in nodos_visitados
         )
-#restricciones: 
-# velocidad max: tipo ferroviario (costo por km)
-# carga max: tipo automotor (costo por kg)
-# fluvial o maritima distinta taza fija
-# conexion aerea hace algo raro con probabilidad del tiempo
-    """
-diccionario_rutas = {
-ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
-[Zarate,Azul,Mar_del_Plata]}
-}
-}
-"""
-    def cantidad_vehiculos(self, ruta, vehiculo, carga): #ruta es una lista de conexiones
+    @staticmethod
+    def cantidad_vehiculos(ruta, vehiculo, carga): #ruta es una lista de conexiones
         if isinstance(vehiculo, Sistema_de_Transporte.Automotor) : #carga es la carga que se quiere transportar, capacidad es el peso maximo del vehiculo
             capacidades_posibles=[]
             for conexion in ruta:
@@ -97,63 +82,49 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
                 return max(capacidades_posibles)
         return math.ceil(carga / vehiculo.capacidad)
             
-    
+    @staticmethod
     def calcular_costo(conexion, cantidad_vehiculos, vehiculo, carga): #funcion GENERAL para calcular el costo de un tipo de vehiculo especifico para una conexion especifica
         if not isinstance(vehiculo, Sistema_de_Transporte.Tipo_transporte):
              raise ValueError("Tipo de transporte no reconocido")
         costo_x_km = vehiculo.costo_km
         costo_fijo = vehiculo.costo_fijo
-         # CASO AUTOMOTOR: costo por kg depende de la carga por vehículo
         if isinstance(vehiculo, Sistema_de_Transporte.Automotor):
-            # Determinar la capacidad máxima real por vehículo (limitada por conexión si aplica)
             capacidad_max_por_vehiculo = vehiculo.capacidad
             if conexion.restriccion == "peso_max":
                 capacidad_max_por_vehiculo = min(vehiculo.capacidad, float(conexion.valor_restriccion))
 
             carga_restante = carga
             costo_variable_total = 0
-
-            # Repartir la carga en vehículos y calcular el costo por kg de cada uno
             while carga_restante > 0:
                 carga_vehiculo = min(capacidad_max_por_vehiculo, carga_restante)
-    
-                # Determinar el costo por kg según carga del automotor
                 costo_kg = 2 if carga_vehiculo > 15000 else 1
-                # Sumar costo de esta parte
                 costo_variable_total += carga_vehiculo * costo_kg
                 carga_restante -= carga_vehiculo
-            # Costo total = fijos por cada vehículo + variable por kg
+            
             costo_total = cantidad_vehiculos * (costo_fijo + costo_x_km * conexion.distancia) + costo_variable_total
-
-            # CASO GENERAL (no automotor): aplicar costo fijo por kg
         else:
             costo_total = (cantidad_vehiculos * (costo_fijo + costo_x_km * conexion.distancia)) + vehiculo.costo_kg * carga
         return costo_total
-            
+     
     def calcular_tiempo(conexion, vehiculo):
         distancia = conexion.distancia
-
         if not isinstance(vehiculo, Sistema_de_Transporte.Tipo_transporte):
             velocidad = vehiculo.velocidad_nominal
         else:
             raise ValueError("Tipo de transporte no reconocido")
-
         tiempo_total = distancia / velocidad
-
         return tiempo_total
     
-    
-    def analisis_costo_tiempo(self, diccionario_rutas,carga):# el diccionario_rutas es un diccionario de encontrar_todas_rutas
+    @staticmethod
+    def analisis_costo_tiempo(diccionario_rutas,carga):# el diccionario_rutas es un diccionario de encontrar_todas_rutas
         lista_costo = []
         lista_tiempo = []
         lista_rutas = []
         lista_tipos=[]
         lista_cantidad_vehiculos = []
 
-        
         for tipo_transporte,lista_rutas_dic in diccionario_rutas.items() :
             for ruta in lista_rutas_dic:
-                
                 costo_total, tiempo_total,tipo, cantidad_vehiculos = Planificador.calcular_costo_tiempo(ruta,carga,tipo_transporte)
                 lista_rutas.append(ruta)
                 lista_costo.append(costo_total)
@@ -161,7 +132,6 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
                 lista_tipos.append(tipo)
                 lista_cantidad_vehiculos.append(cantidad_vehiculos)
                 
-
         menor_costo = lista_costo[Planificador.indice_mas_bajo(lista_costo)]
         ruta_menor_costo = lista_rutas[Planificador.indice_mas_bajo(lista_costo)]
         tiempo_menor_costo = lista_tiempo[Planificador.indice_mas_bajo(lista_costo)]
@@ -174,15 +144,13 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
         tipo_menor_tiempo = lista_tipos[Planificador.indice_mas_bajo(lista_tiempo)]
         cantidad_vehiculos_menor_tiempo = lista_cantidad_vehiculos[Planificador.indice_mas_bajo(lista_tiempo)]
         
-        #las tuplas van: (costo,tiempo,ruta,tipo)
         tupla_menor_costo=(menor_costo,tiempo_menor_costo,ruta_menor_costo,tipo_menor_costo, cantidad_vehiculos_menor_costo, carga)
         tupla_menor_tiempo=(costo_menor_tiempo,menor_tiempo, ruta_menor_tiempo,tipo_menor_tiempo, cantidad_vehiculos_menor_tiempo, carga)
         return tupla_menor_costo, tupla_menor_tiempo
-    
-    def calcular_costo_tiempo(self, ruta,carga,tipo_transporte): # ruta es lista de conexiones. #ruta= [zarate->bsas, bsas->mdp] cada uno es un objeto conexion
+    @staticmethod
+    def calcular_costo_tiempo(ruta,carga,tipo_transporte): # ruta es lista de conexiones. #ruta= [zarate->bsas, bsas->mdp] cada uno es un objeto conexion
         costo_total = 0
         tiempo_total = 0
-        
         cantidad_vehiculos = Planificador.cantidad_vehiculos(ruta, tipo_transporte, carga)
         
         for conexion in ruta:
@@ -205,7 +173,6 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
             elif tipo_transporte=="Automotor":
                 vehiculo=Sistema_de_Transporte.Automotor(costo_x_kg=2)              
                 
-                
             elif tipo_transporte == "Ferroviaria":
                 if conexion.restriccion == 'velocidad_max':
                     velocidad = min(100, float(conexion.valor_restriccion))
@@ -219,7 +186,6 @@ ferroviaria = { [[Zarate>Buenos_aires,Buenos_aires>Azul,Azul>Mar_del_Plata]
             tiempo_total += Planificador.calcular_tiempo(conexion, vehiculo)
         return costo_total,tiempo_total,tipo_transporte, cantidad_vehiculos
         
-    
     @staticmethod
     def determinar_vel(prob_mal_tiempo, velocidad_buen_tiempo = 600, velocidad_mal_tiempo = 400):
         

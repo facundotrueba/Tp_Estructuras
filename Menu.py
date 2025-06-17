@@ -1,6 +1,7 @@
 import Validaciones
 import Sistema_de_Transporte
 import Planificador
+import Itinerario
 def cargar_sistema(archivo_nodos, archivo_conexiones, archivo_solicitudes):
     Validaciones.cargar_nodos(archivo_nodos)
     Validaciones.cargar_conexiones(archivo_conexiones)
@@ -54,14 +55,14 @@ def elegir_itinerario(id, menor_costo, menor_tiempo):
         print(f'Elegí la ruta segun lo que quieras optimizar \n1. Tiempo\n2. Costo')
         opcion = input('Introduzca la opción elegida (1-2): ').strip()
         if opcion == '1':
-            itinerario = Sistema_de_Transporte.Itinerario(id, menor_tiempo[2], menor_tiempo[0], menor_tiempo[1], 'KPI 1', menor_tiempo[3], menor_tiempo[4], menor_tiempo[5])
+            itinerario = Itinerario.Itinerario(id, menor_tiempo[2], menor_tiempo[0], menor_tiempo[1], 'KPI 1', menor_tiempo[3], menor_tiempo[4], menor_tiempo[5])
             print('KPI 1: Minimizar el tiempo total de la entrega')
-            Sistema_de_Transporte.Itinerario.mostrar_resumen(itinerario) #Quedaria ver si hay que almacenar los itinerarios en algun lado
+            Itinerario.Itinerario.mostrar_resumen(itinerario) #Quedaria ver si hay que almacenar los itinerarios en algun lado
             valido = True
         elif opcion == '2':
-            itinerario = Sistema_de_Transporte.Itinerario(id, menor_costo[2], menor_costo[0], menor_costo[1], 'KPI 2', menor_costo[3], menor_costo[4], menor_costo[5])
+            itinerario = Itinerario.Itinerario(id, menor_costo[2], menor_costo[0], menor_costo[1], 'KPI 2', menor_costo[3], menor_costo[4], menor_costo[5])
             print('KPI 2: Minimizar el costo total del transporte')
-            Sistema_de_Transporte.Itinerario.mostrar_resumen(itinerario)
+            Itinerario.Itinerario.mostrar_resumen(itinerario)
             valido = True
         else:
             print(f'Opción "{opcion}" inválida. Se espera (1-2).')

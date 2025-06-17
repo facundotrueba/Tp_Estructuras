@@ -2,7 +2,7 @@ import csv
 import Sistema_de_Transporte
 import Nodo
 import Conexion
-
+import Solicitud
 def leer_csv(nombre_archivo):
     datos = []
     try:
@@ -17,90 +17,86 @@ def leer_csv(nombre_archivo):
 
 def validar_conexion(lista):
     tipos = ("fluvial", "aerea", "automotor", "ferroviaria")
-    try:
-        for i in range(len(lista)):
-            if isinstance(lista[i], str):
-                lista[i] = lista[i].strip().lower()
-        if len(lista) != 6:
-            raise TypeError('Cantidad de atributos insuficientes para instanciar una conexión')
-        lista[4] = None if lista[4] == '' else lista[4]
-        lista[5] = None if lista[5] == '' else lista[5]
-        if Nodo.Nodo.get_nombre(lista[0]) is None:  
-            raise ValueError(f'Nodo "{lista[0]}" inexistente')
-        if Nodo.Nodo.get_nombre(lista[1]) is None:  
-            raise ValueError(f'Nodo "{lista[1]}" inexistente')
-        if lista[2] not in tipos:
-            raise ValueError(f'El tipo ingresado "{lista[2]}" es invalido')
-        if not isinstance(lista[3], (int, float, str)):
-            raise TypeError(f'Tipo de dato incorrecto para el atributo Distancia')
-        else:
-            try:
-                lista[3] = float(lista[3])
-            except ValueError:
-                raise ValueError('El valor de la restricción debe ser un número válido')
-            if lista[3] <= 0:
-                raise ValueError(f'La distancia no puede ser negativa o 0')
-        if (lista[4] == None and lista[5]) or (lista[5] == None and lista[4]):
-            raise ValueError(f'Error en la restricción y el valor de la misma')
-        if not (lista[4] == None and lista[5] == None):
-            if lista[2] == 'fluvial':
-                if not (lista[4] == 'tipo'):
-                    raise ValueError(f'La restricción "{lista[4]}" es invalida para el transporte fluvial')
+    for i in range(len(lista)):
+        if isinstance(lista[i], str):
+            lista[i] = lista[i].strip().lower()
+    if len(lista) != 6:
+        raise TypeError('Cantidad de atributos insuficientes para instanciar una conexión')
+    lista[4] = None if lista[4] == '' else lista[4]
+    lista[5] = None if lista[5] == '' else lista[5]
+    if Nodo.Nodo.get_nombre(lista[0]) is None:  
+        raise ValueError(f'Nodo "{lista[0]}" inexistente')
+    if Nodo.Nodo.get_nombre(lista[1]) is None:  
+        raise ValueError(f'Nodo "{lista[1]}" inexistente')
+    if lista[2] not in tipos:
+        raise ValueError(f'El tipo ingresado "{lista[2]}" es invalido')
+    if not isinstance(lista[3], (int, float, str)):
+        raise TypeError(f'Tipo de dato incorrecto para el atributo Distancia')
+    else:
+        try:
+            lista[3] = float(lista[3])
+        except ValueError:
+            raise ValueError('El valor de la restricción debe ser un número válido')
+        if lista[3] <= 0:
+            raise ValueError(f'La distancia no puede ser negativa o 0')
+    if (lista[4] == None and lista[5]) or (lista[5] == None and lista[4]):
+        raise ValueError(f'Error en la restricción y el valor de la misma')
+    if not (lista[4] == None and lista[5] == None):
+        if lista[2] == 'fluvial':
+            if not (lista[4] == 'tipo'):
+                raise ValueError(f'La restricción "{lista[4]}" es invalida para el transporte fluvial')
+            else:
+                if not isinstance(lista[5],str):
+                    raise TypeError(f'Tipo de dato incorrecto para el valor de la restricción')
+                elif not (lista[5] == 'fluvial' or lista[5] == 'maritimo'):
+                    raise ValueError(f'El valor de la restricción {lista[5]} es inválido para la restricción')
+        if lista[2] == 'aerea':
+            if not (lista[4] == 'prob_mal_tiempo'):
+                raise ValueError(f'La restricción "{lista[4]}" es invalida para el transporte aéreo')
+            else:
+                if not isinstance(lista[5], (int, float, str)):
+                    raise TypeError(f'Tipo de dato incorrecto para el valor de la restricción')                
                 else:
-                    if not isinstance(lista[5],str):
-                        raise TypeError(f'Tipo de dato incorrecto para el valor de la restricción')
-                    elif not (lista[5] == 'fluvial' or lista[5] == 'maritimo'):
-                        raise ValueError(f'El valor de la restricción {lista[5]} es inválido para la restricción')
-            if lista[2] == 'aerea':
-                if not (lista[4] == 'prob_mal_tiempo'):
-                    raise ValueError(f'La restricción "{lista[4]}" es invalida para el transporte aéreo')
+                    try:
+                        lista[5] = float(lista[5])
+                    except ValueError:
+                        raise ValueError('El valor de la restricción debe ser un número válido')
+                    if not (1 > lista[5] > 0):
+                        raise ValueError(f'El valor de la restricción es inválido')
+        if lista[2] == 'ferroviaria':
+            if not (lista[4] == 'velocidad_max'):
+                raise ValueError(f'La restricción "{lista[4]}" es invalida para el transporte ferroviario')
+            else:
+                if not isinstance(lista[5], (int, str, float)):
+                    raise ValueError(f'El valor de la restricción es inválido')    
                 else:
-                    if not isinstance(lista[5], (int, float, str)):
-                        raise TypeError(f'Tipo de dato incorrecto para el valor de la restricción')                
-                    else:
-                        try:
-                            lista[5] = float(lista[5])
-                        except ValueError:
-                            raise ValueError('El valor de la restricción debe ser un número válido')
-                        if not (1 > lista[5] > 0):
-                            raise ValueError(f'El valor de la restricción es inválido')
-            if lista[2] == 'ferroviaria':
-                if not (lista[4] == 'velocidad_max'):
-                    raise ValueError(f'La restricción "{lista[4]}" es invalida para el transporte ferroviario')
-                else:
-                    if not isinstance(lista[5], (int, str, float)):
-                        raise ValueError(f'El valor de la restricción es inválido')    
-                    else:
-                        try:
-                            lista[5] = float(lista[5])
-                        except ValueError:
-                            raise ValueError('El valor de la restricción debe ser un número válido')
-                        if not (lista[5] > 0):
-                            raise ValueError(f'El valor de la restricción es inválido')
-            if lista[2] == 'automotor':
-                if not (lista[4] == 'peso_max'):
-                    raise ValueError(f'La restricción "{lista[4]}" es invalida para el transporte automotor')
-                else:
-                    if not isinstance(lista[5], (str, int, float)):
-                        raise ValueError(f'El valor de la restricción es inválido')    
-                    else: 
-                        try:
-                            lista[5] = float(lista[5])
-                        except ValueError:
-                            raise ValueError('El valor de la restricción debe ser un número válido')
-                        if not (lista[5] > 0):
-                            raise ValueError(f'El valor de la restricción es inválido')
-        return lista, True
-    except Exception as e:
-        return None, False
-                                        
+                    try:
+                        lista[5] = float(lista[5])
+                    except ValueError:
+                        raise ValueError('El valor de la restricción debe ser un número válido')
+                    if not (lista[5] > 0):
+                        raise ValueError(f'El valor de la restricción es inválido')
+        if lista[2] == 'automotor':
+            if not (lista[4] == 'peso_max'):
+                raise ValueError(f'La restricción "{lista[4]}" es invalida para el transporte automotor')
+            else:
+                if not isinstance(lista[5], (str, int, float)):
+                    raise ValueError(f'El valor de la restricción es inválido')    
+                else: 
+                    try:
+                        lista[5] = float(lista[5])
+                    except ValueError:
+                        raise ValueError('El valor de la restricción debe ser un número válido')
+                    if not (lista[5] > 0):
+                        raise ValueError(f'El valor de la restricción es inválido')
+    return lista
+                                            
 def cargar_conexiones(nombre_archivo):
     datos = leer_csv(nombre_archivo)
     for i in datos:
-        conexion,es_valida = validar_conexion(i)
-        if es_valida:
-            Conexion.Conexion(conexion[0],conexion[1],conexion[2],conexion[3],conexion[4],conexion[5])
-            Conexion.Conexion(conexion[1],conexion[0],conexion[2],conexion[3],conexion[4],conexion[5])
+        conexion = validar_conexion(i)
+        Conexion.Conexion(conexion[0],conexion[1],conexion[2],conexion[3],conexion[4],conexion[5])
+        Conexion.Conexion(conexion[1],conexion[0],conexion[2],conexion[3],conexion[4],conexion[5])
 
 def validar_nodo(entrada):
     """
@@ -114,7 +110,7 @@ def validar_nodo(entrada):
     if nombre == "":
         raise ValueError("El nombre del nodo no puede estar vacío.")
 
-    if Sistema_de_Transporte.Nodo.get_nombre(nombre) is not None:
+    if Nodo.Nodo.get_nombre(nombre) is not None:
         raise ValueError(f"El nodo '{nombre}' ya fue cargado.")
 
     return nombre
@@ -157,7 +153,7 @@ def validar_solicitud(fila):
         raise ValueError("El número de ID de carga debe ser mayor a 0")
 
     # Validar ID duplicado en cola
-    for solicitud in Sistema_de_Transporte.Solicitud_Transporte.cola_solicitudes:
+    for solicitud in Solicitud.Solicitud_Transporte.cola_solicitudes:
         if solicitud.id_carga == id_carga:
             raise ValueError(f"Ya existe una solicitud con ID '{id_carga}'")
 
@@ -170,8 +166,8 @@ def validar_solicitud(fila):
         raise TypeError("El peso debe ser un número (int o float)")
 
     # Validar nodos
-    origen_nodo = Sistema_de_Transporte.Nodo.get_nombre(origen)
-    destino_nodo = Sistema_de_Transporte.Nodo.get_nombre(destino)
+    origen_nodo = Nodo.Nodo.get_nombre(origen)
+    destino_nodo = Nodo.Nodo.get_nombre(destino)
 
     if origen_nodo is None:
         raise ValueError(f"El nodo de origen '{origen}' no existe.")
@@ -188,7 +184,7 @@ def cargar_solicitudes(nombre_archivo):
     for fila in datos:
         try:
             id_carga, peso, origen, destino = validar_solicitud(fila)
-            Sistema_de_Transporte.Solicitud_Transporte(id_carga, peso, origen, destino)
+            Solicitud.Solicitud_Transporte(id_carga, peso, origen, destino)
         except (ValueError, TypeError) as e:
             print(f"Error al cargar solicitud: {e}")
             
@@ -210,9 +206,7 @@ def cargar_solicitudes(nombre_archivo):
 # print (l)
 
 
-auxiliar.cargar_nodos('nodos.csv')
-cargar_conexiones('conexiones.csv')
-print(Sistema_de_Transporte.Conexion.conexiones_por_tipo)
+
 
 
 

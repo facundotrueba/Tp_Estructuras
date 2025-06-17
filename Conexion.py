@@ -1,3 +1,4 @@
+import Nodo
 #DICCIONARIO: CLAVE 1 TIPO, CLAVE 2 NODO, CLAVE 3 DESTINO, lista (dist, restriccion, valor_restriccion)
 class Conexion: 
     conexiones_por_tipo = {} #clave=tipo, valor=set de conexiones del tipo
@@ -22,8 +23,8 @@ class Conexion:
             self.restriccion = None
             self.valor_restriccion = None
 
-        Nodo.get_nombre(self.origen).tipos_disponibles.add(self.tipo)#agrega los tipos al nodo
-        Nodo.get_nombre(self.destino).tipos_disponibles.add(self.tipo)
+        Nodo.Nodo.get_nombre(self.origen).tipos_disponibles.add(self.tipo)#agrega los tipos al nodo
+        Nodo.Nodo.get_nombre(self.destino).tipos_disponibles.add(self.tipo)
 
         if self.tipo not in Conexion.conexiones_por_tipo:
             Conexion.conexiones_por_tipo[self.tipo] = {self}
@@ -44,5 +45,5 @@ class Conexion:
         )
         
 
-    def __hash__(self): #PREGUNTAR A FEDE, si no esta explota
+    def __hash__(self): #Resolver! Puede que tengamos que cambiar la estructura
         return hash((self.origen, self.destino, self.tipo, self.distancia, self.restriccion, self.valor_restriccion))

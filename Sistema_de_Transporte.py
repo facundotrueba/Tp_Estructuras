@@ -3,6 +3,8 @@ import math
 import random
 import matplotlib.pyplot as plt
 import numpy as np
+import Planificador
+import Nodo
 
 class Tipo_transporte:
     def __init__(self, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg): #lo de los costos hacer archivo csv CHEQUEAR LUCAS
@@ -61,7 +63,7 @@ class Itinerario:
 
         for conexion in self.ruta: 
             distancia_acum += conexion.distancia
-            tiempo_conexion = Planificador.calcular_tiempo(conexion, vehiculo)
+            tiempo_conexion = Planificador.Planificador.calcular_tiempo(conexion, vehiculo)
             tiempo_acum += tiempo_conexion
             distancias.append(distancia_acum)
             tiempos.append(tiempo_acum)
@@ -123,7 +125,8 @@ class Itinerario:
         plt.title("Costo Acumulado vs. Tiempo Acumulado")
         plt.grid(True)
         plt.show()
-        
+    
+    
     def mostrar_resumen(self):
         return f"Itinerario: {self.ruta} | cantidad de conexion: {len(self.ruta)} | Tiempo: {self.tiempo} min | Costo: ${self.costo}"
 
@@ -133,8 +136,8 @@ class Itinerario:
 # Cada ruta es una lista de conexiones que hay entre los nodos. 
 
 def testear_funciones(grafo, nombre_origen, nombre_destino):
-    origen = Nodo.get_nombre(nombre_origen)
-    destino = Nodo.get_nombre(nombre_destino)
+    origen = Nodo.Nodo.get_nombre(nombre_origen)
+    destino = Nodo.Nodo.get_nombre(nombre_destino)
 
     if origen is None or destino is None:
         print("Origen o destino no existen.")

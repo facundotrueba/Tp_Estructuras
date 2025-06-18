@@ -1,5 +1,4 @@
 from collections import deque
-import Planificador
 class Solicitud_Transporte:
     cola_solicitudes = deque() #colacha ()
     def __init__(self, id_carga, peso_kg, origen, destino):
@@ -11,4 +10,5 @@ class Solicitud_Transporte:
         self.peso_kg=peso_kg
         self.origen=origen
         self.destino=destino
-        Planificador.cola_solicitudes.append(self)
+        Solicitud_Transporte.cola_solicitudes.append(self)
+        

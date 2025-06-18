@@ -31,6 +31,23 @@ class Conexion:
         else:
             Conexion.conexiones_por_tipo[self.tipo].add(self)
             
+    @classmethod
+    def get_conexion(cls, origen, destino, tipo, distancia, restriccion=None, valor_restriccion=None):
+        tipo = tipo.strip().lower()
+        if tipo not in cls.conexiones_por_tipo:
+            return None
+
+        for conexion in cls.conexiones_por_tipo[tipo]:
+            if (
+                conexion.origen == origen and
+                conexion.destino == destino and
+                conexion.tipo == tipo and
+                conexion.distancia == float(distancia) and
+                conexion.restriccion == (restriccion.strip().lower() if restriccion else None) and
+                conexion.valor_restriccion == (float(valor_restriccion) if valor_restriccion is not None else None)
+            ):
+                return conexion
+        return None 
     def __str__(self):
         return f"De {self.origen} a {self.destino}. Tipo: {self.tipo}"
 

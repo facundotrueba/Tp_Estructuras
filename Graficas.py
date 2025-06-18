@@ -46,8 +46,8 @@ class Graficos:
             distancias[i] = distancia_acum
         return costos, distancias
 
-    def graficar_costo_vs_distancia(self, vehiculo, ruta):
-        costos, distancias = self.calcular_arrays_costo_distancia_acumulada(vehiculo, ruta)
+    def graficar_costo_vs_distancia(self, vehiculo, ruta, cantidad_vehiculos, carga):
+        costos, distancias = self.calcular_arrays_costo_distancia_acumulada(vehiculo, ruta, cantidad_vehiculos, carga)
         print("Mostrando grafico: Costo Acumulado vs. Distancia Acumulada")
         plt.plot(distancias, costos, marker="o")
         plt.xlabel("Distancia acumulada (km)")
@@ -56,14 +56,15 @@ class Graficos:
         plt.grid(True)
         plt.show()
     
-    def calcular_arrays_costo_tiempo_acumulado(self, vehiculo, ruta, cantidad_vehiculos, ):
+    @staticmethod
+    def calcular_arrays_costo_tiempo_acumulado(vehiculo, ruta, cantidad_vehiculos, carga):
         n=len(ruta)
         costos = np.empty(n)
         tiempos = np.empty(n)
         costo_acum = 0
         tiempo_acum = 0
         for i, conexion in enumerate(ruta):
-            costo_conexion = Planificador.calcular_costo(conexion, cantidad_vehiculos, vehiculo, self.carga)
+            costo_conexion = Planificador.calcular_costo(conexion, cantidad_vehiculos, vehiculo, carga)
             costo_acum += costo_conexion
             tiempo_conexion = Planificador.calcular_tiempo(conexion, vehiculo)
             tiempo_acum += tiempo_conexion
@@ -71,9 +72,8 @@ class Graficos:
             tiempos[i] = tiempo_acum
         return np.array(costos), np.array(tiempos)
     
-    @staticmethod
-    def graficar_costo_vs_tiempo(self, vehiculo, ruta):
-        costos, tiempos = self.calcular_arrays_costo_tiempo_acumulado(vehiculo, ruta)
+    def graficar_costo_vs_tiempo(self, vehiculo, ruta, cantidad_vehiculos, carga):
+        costos, tiempos = self.calcular_arrays_costo_tiempo_acumulado(vehiculo, ruta, cantidad_vehiculos, carga)
         print("Mostrando grafico: Costo Acumulado vs. Tiempo Acumulado")
         plt.plot(tiempos, costos, marker="o")
         plt.xlabel("Tiempo acumulado (h)")

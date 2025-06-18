@@ -89,20 +89,24 @@ def validar_conexion(lista):
                         raise ValueError('El valor de la restricción debe ser un número válido')
                     if not (lista[5] > 0):
                         raise ValueError(f'El valor de la restricción es inválido')
+    if Conexion.Conexion.get_conexion(lista[0],lista[1],lista[2],lista[3],lista[4],lista[5]) is not None:
+        raise ValueError(f"La conexion '{lista[0]} a {lista[1]} de tipo: {lista[2]}' ya fue cargado.")
     return lista
                                      
 def cargar_conexiones(nombre_archivo):
     datos = leer_csv(nombre_archivo)
+    i =1
     for fila in datos:
         if fila:
             try:
                 conexion = validar_conexion(fila)
                 Conexion.Conexion(conexion[0],conexion[1],conexion[2],conexion[3],conexion[4],conexion[5])
                 Conexion.Conexion(conexion[1],conexion[0],conexion[2],conexion[3],conexion[4],conexion[5])
-                print('Conexiones cargadas exitosamente.')
             except (TypeError, ValueError) as e:
                 print(f"Error al cargar conexiones '{fila[0]}': {e}")
-
+                i = 0
+    if i:
+        print('Conexiones cargadas exitosamente.')
 def validar_nodo(entrada):
     """
     Valida que la entrada para un nodo sea un string válido y no esté duplicado.
@@ -122,25 +126,18 @@ def validar_nodo(entrada):
 
 def cargar_nodos(nombre_archivo):
     datos = leer_csv(nombre_archivo)
+    i= 1
     for fila in datos:
         if fila:  # chequea que no esté vacía
             try:
                 nombre = validar_nodo(fila[0])
                 Nodo.Nodo(nombre)
-                print('Nodos cargados exitosamente.')
             except (TypeError, ValueError) as e:
-                print(f"Error al cargar nodo '{fila[0]}': {e}")
-            
+                print(f"Error al cargar nodo '{fila[0].lower()}': {e}")
+                i = 0
+    if i:
+        print('Nodos cargados exitosamente.')            
                 
-
-# def cargar_nodos(nombre_archivo):
-#     datos = leer_csv(nombre_archivo)
-#     for i in datos:
-#         if i and i[0].strip().lower():
-#             Sistema_de_Transporte.Nodo(i[0].strip().lower())
-            
-# para validar nodos solamente q sean str y hacer funcion validar nodos donde lo hagas y que no esten
-# ya en la lista de nodos creados en la propia clase 
             
 def validar_solicitud(fila):
     if len(fila) != 4:
@@ -174,14 +171,18 @@ def validar_solicitud(fila):
 
 def cargar_solicitudes(nombre_archivo):
     datos = leer_csv(nombre_archivo)
+    i=1
     for fila in datos:
         if fila:
             try:
                 id_carga, peso, origen, destino = validar_solicitud(fila)
                 Solicitud.Solicitud_Transporte(id_carga, peso, origen, destino)
-                print('Solicitudes cargadas exitosamente.')
             except (ValueError, TypeError) as e:
                 print(f"Error al cargar solicitud: {e}")
+                i=0
+    if i:
+        print('Solicitudes cargadas exitosamente.')
+        
                 
 '''
 Pensar funciones agregar/borrar conexiones, nodos, vehiculos

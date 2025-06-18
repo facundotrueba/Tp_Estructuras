@@ -12,7 +12,7 @@ def cargar_sistema():
                 print(f'Error al cargar conexiones: "{e}"')
         
             try:
-                Validaciones.cargar_solicitudes('soliciudes.csv')
+                Validaciones.cargar_solicitudes('solicitudes.csv')
             except FileNotFoundError as e:
                 print(f'Error al cargar solicitudes: {e}')
 
@@ -34,9 +34,9 @@ def menu_principal():
         elif opcion == '2':
             hay_solicitudes = True
             while hay_solicitudes:
-                id, menor_costo, menor_tiempo = Planificador.Planificador.procesar_siguiente() #Revisar funcion, no se si necesita que este el self
-                itinerario = elegir_itinerario(id, menor_costo, menor_tiempo)
-                # graficar_distancia_vs_tiempo(self, vehiculo, ruta)
+                id, tupla_menor_costo, tupla_menor_tiempo = Planero.procesar_siguiente() #Revisar funcion, no se si necesita que este el self
+                itinerario = elegir_itinerario(id, tupla_menor_costo, tupla_menor_tiempo)
+                #graficar_distancia_vs_tiempo(self, itinerario.vehiculo, itinerario.ruta)
                 # graficar_costo_vs_distancia(self, vehiculo, ruta, cantidad_vehiculos, carga)
                 # graficar_costo_vs_tiempo(self, vehiculo, ruta, cantidad_vehiculos, carga)
                 #Yo agregaria aca el tema de los graficos

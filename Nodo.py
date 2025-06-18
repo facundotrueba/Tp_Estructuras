@@ -17,3 +17,4 @@ class Nodo:
             if nodo.nombre.strip().lower() == nombre:
                 return nodo
         return None
+    

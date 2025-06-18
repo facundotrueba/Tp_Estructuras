@@ -19,11 +19,10 @@ def cargar_sistema():
     
 def menu_principal():
     salir = False
+    Planero=Planificador.Planificador("ADMIN")
     while not salir:
         print('-' * 50)
         print('Sistema de transporte - Menú principal')
-        Planero=Planificador.Planificador("ADMIN")
-        
         print('-' * 50)
         print('1. Cargar nodos, conexiones y solicitudes')
         print('2. Procesar solicitudes')

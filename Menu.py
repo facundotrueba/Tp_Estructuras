@@ -2,6 +2,7 @@ import Validaciones
 import Planificador
 import Itinerario
 import Solicitud
+import Graficas
 def cargar_sistema():
             try:
                 Validaciones.cargar_nodos('nodos.csv')
@@ -36,10 +37,9 @@ def menu_principal():
             if Solicitud.Solicitud_Transporte.hay_solicitudes():
                 id, tupla_menor_costo, tupla_menor_tiempo = Planero.procesar_siguiente() 
                 itinerario = elegir_itinerario(id, tupla_menor_costo, tupla_menor_tiempo)
-                #graficar_distancia_vs_tiempo(self, itinerario.vehiculo, itinerario.ruta)
-                # graficar_costo_vs_distancia(self, vehiculo, ruta, cantidad_vehiculos, carga)
-                # graficar_costo_vs_tiempo(self, vehiculo, ruta, cantidad_vehiculos, carga)
-                #Yo agregaria aca el tema de los graficos
+                Graficas.Graficos().graficar_distancia_vs_tiempo(itinerario.vehiculo, itinerario.ruta)
+                Graficas.Graficos().graficar_costo_vs_distancia(itinerario.vehiculo, itinerario.ruta, itinerario.cantidad_vehiculos, itinerario.carga)
+                Graficas.Graficos().graficar_costo_vs_tiempo(itinerario.vehiculo, itinerario.ruta, itinerario.cantidad_vehiculos, itinerario.carga)
             else: 
                  print("No hay solicitudes pendientes.")
         elif opcion == '3':

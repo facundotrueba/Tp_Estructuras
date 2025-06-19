@@ -4,23 +4,48 @@ import Planificador
 
 class Graficos:
     @staticmethod
+    # def calcular_arrays_distancia_tiempo_acumulados(vehiculo, ruta):
+    #     n = len(ruta)
+    #     distancias = np.empty(n)
+    #     tiempos    = np.empty(n)
+
+    #     distancia_acum = 0
+    #     tiempo_acum    = 0
+
+    #     for i, conexion in enumerate(ruta):
+    #         distancia_acum += conexion.distancia
+    #         tiempo_conexion = Planificador.Planificador.calcular_tiempo(conexion, vehiculo)
+    #         tiempo_acum    += tiempo_conexion
+
+    #         distancias[i] = distancia_acum
+    #         tiempos[i]    = tiempo_acum
+
+    #     return distancias, tiempos
+    @staticmethod
     def calcular_arrays_distancia_tiempo_acumulados(vehiculo, ruta):
-        n = len(ruta)
-        distancias = np.empty(n)
-        tiempos    = np.empty(n)
+        # un punto extra para (0,0)
+        n_pts = len(ruta) + 1
+
+        distancias   = np.empty(n_pts)
+        tiempos      = np.empty(n_pts)
+
+        # punto inicial
+        distancias[0] = 0
+        tiempos[0]    = 0
 
         distancia_acum = 0
         tiempo_acum    = 0
 
-        for i, conexion in enumerate(ruta):
+        # empezamos el enumerate en 1
+        for idx, conexion in enumerate(ruta, start=1):
             distancia_acum += conexion.distancia
-            tiempo_conexion = Planificador.Planificador.calcular_tiempo(conexion, vehiculo)
-            tiempo_acum    += tiempo_conexion
+            tiempo_acum    += Planificador.Planificador.calcular_tiempo(conexion, vehiculo)
 
-            distancias[i] = distancia_acum
-            tiempos[i]    = tiempo_acum
+            distancias[idx] = distancia_acum
+            tiempos[idx]    = tiempo_acum
 
         return distancias, tiempos
+
 
     def graficar_distancia_vs_tiempo(self, vehiculo, ruta):
         distancias, tiempos = self.calcular_arrays_distancia_tiempo_acumulados(vehiculo,ruta)
@@ -34,17 +59,31 @@ class Graficos:
    
     @staticmethod
     def calcular_arrays_costo_distancia_acumulada(vehiculo, ruta, cantidad_vehiculos):
-        n = len(ruta)
-        costos = np.empty(n)
-        distancias = np.empty(n)
-        costo_acum = 0
+        # un punto extra para (0,0)
+        n_pts     = len(ruta) + 1
+        costos    = np.empty(n_pts)
+        distancias= np.empty(n_pts)
+
+        # punto inicial
+        costos[0]     = 0
+        distancias[0] = 0
+
+        costo_acum     = 0
         distancia_acum = 0
-        for i, conexion in enumerate(ruta):
-            costo_conexion = Planificador.Planificador.calcular_costo(conexion, cantidad_vehiculos, vehiculo)
-            costo_acum += costo_conexion
+
+        # llenamos desde el índice 1
+        for idx, conexion in enumerate(ruta, start=1):
+            costo_i = Planificador.Planificador.calcular_costo(
+                conexion,
+                cantidad_vehiculos,
+                vehiculo
+            )
+            costo_acum     += costo_i
             distancia_acum += conexion.distancia
-            costos[i] = costo_acum
-            distancias[i] = distancia_acum
+
+            costos[idx]     = costo_acum
+            distancias[idx] = distancia_acum
+
         return costos, distancias
 
     def graficar_costo_vs_distancia(self, vehiculo, ruta, cantidad_vehiculos):
@@ -59,19 +98,34 @@ class Graficos:
     
     @staticmethod
     def calcular_arrays_costo_tiempo_acumulado(vehiculo, ruta, cantidad_vehiculos):
-        n=len(ruta)
-        costos = np.empty(n)
-        tiempos = np.empty(n)
-        costo_acum = 0
+        # un punto extra para (0,0)
+        n_pts  = len(ruta) + 1
+        tiempos= np.empty(n_pts)
+        costos = np.empty(n_pts)
+
+        # punto inicial
+        tiempos[0] = 0
+        costos[0]  = 0
+
         tiempo_acum = 0
-        for i, conexion in enumerate(ruta):
-            costo_conexion = Planificador.Planificador.calcular_costo(conexion, cantidad_vehiculos, vehiculo)
-            costo_acum += costo_conexion
-            tiempo_conexion = Planificador.Planificador.calcular_tiempo(conexion, vehiculo)
-            tiempo_acum += tiempo_conexion
-            costos[i] = costo_acum
-            tiempos[i] = tiempo_acum
-        return np.array(costos), np.array(tiempos)
+        costo_acum  = 0
+
+        # llenamos desde el índice 1
+        for idx, conexion in enumerate(ruta, start=1):
+            dt = Planificador.Planificador.calcular_tiempo(conexion, vehiculo)
+            dc = Planificador.Planificador.calcular_costo(
+                conexion,
+                cantidad_vehiculos,
+                vehiculo
+            )
+
+            tiempo_acum   += dt
+            costo_acum    += dc
+
+            tiempos[idx]  = tiempo_acum
+            costos[idx]   = costo_acum
+
+        return tiempos, costos
     
     def graficar_costo_vs_tiempo(self, vehiculo, ruta, cantidad_vehiculos):
         costos, tiempos = self.calcular_arrays_costo_tiempo_acumulado(vehiculo, ruta, cantidad_vehiculos)

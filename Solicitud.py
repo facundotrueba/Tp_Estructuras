@@ -11,4 +11,6 @@ class Solicitud_Transporte:
         self.origen=origen
         self.destino=destino
         Solicitud_Transporte.cola_solicitudes.append(self)
-        
+    @classmethod
+    def hay_solicitudes(cls):
+        return len(cls.cola_solicitudes) > 0

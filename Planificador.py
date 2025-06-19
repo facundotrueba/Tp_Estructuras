@@ -101,37 +101,25 @@ class Planificador: #se instancia UNA VEZ.
         if isinstance(vehiculo, Sistema_de_Transporte.Automotor) : #carga es la carga que se quiere transportar, capacidad es el peso maximo del vehiculo
             capacidades_posibles=[]
             for conexion in ruta:
-                if conexion.restriccion == "peso_max": #Si tiene la restriccion de peso maximo, entonces cada camion debe tener la minima entre el "peso maximo" y la capacidad del camion
-                    cantidad = math.ceil(carga / min(float(conexion.valor_restriccion),vehiculo.capacidad_carga)) 
-                    capacidades_posibles.append(cantidad)
+                restriccion = getattr(conexion, 'restriccion', None)
+                valor_restriccion = getattr(conexion, 'valor_restriccion', None)
+                if restriccion == "peso_max" and valor_restriccion is not None: #Si tiene la restriccion de peso maximo, entonces cada camion debe tener la minima entre el "peso maximo" y la capacidad del camion
+                     max_peso=min(float(valor_restriccion),vehiculo.capacidad_carga)
+                     cantidad = math.ceil(carga /max_peso)
+                     capacidades_posibles.append(cantidad)
             if capacidades_posibles:
                 return max(capacidades_posibles)
         return math.ceil(carga / vehiculo.capacidad_carga)
             
     @staticmethod
-    def calcular_costo(conexion, cantidad_vehiculos, vehiculo, carga): #funcion GENERAL para calcular el costo de un tipo de vehiculo especifico para una conexion especifica
+    def calcular_costo(conexion, cantidad_vehiculos, vehiculo): 
         if not isinstance(vehiculo, Sistema_de_Transporte.Tipo_transporte):
              raise ValueError("Tipo de transporte no reconocido")
         costo_km = vehiculo.costo_km
         costo_fijo = vehiculo.costo_fijo
-        if isinstance(vehiculo, Sistema_de_Transporte.Automotor):
-            capacidad_max_por_vehiculo = vehiculo.capacidad_carga
-            if conexion.restriccion == "peso_max":
-                capacidad_max_por_vehiculo = min(vehiculo.capacidad_carga, float(conexion.valor_restriccion))
-
-            carga_restante = carga
-            costo_variable_total = 0
-            while carga_restante > 0:
-                carga_vehiculo = min(capacidad_max_por_vehiculo, carga_restante)
-                costo_kg = 2 if carga_vehiculo > 15000 else 1
-                costo_variable_total += carga_vehiculo * costo_kg
-                carga_restante -= carga_vehiculo
-            
-            costo_total = cantidad_vehiculos * (costo_fijo + costo_km * conexion.distancia) + costo_variable_total
-        else:
-            costo_total = (cantidad_vehiculos * (costo_fijo + costo_km * conexion.distancia)) + vehiculo.costo_kg * carga
+        costo_total = (cantidad_vehiculos * (costo_fijo + costo_km * conexion.distancia)) 
         return costo_total
-     
+    
     
     @staticmethod
     def calcular_tiempo(conexion, vehiculo):
@@ -169,45 +157,78 @@ class Planificador: #se instancia UNA VEZ.
         tupla_menor_costo=(lista_costo[i_costo],lista_tiempo[i_costo],lista_rutas[i_costo],lista_tipos[i_costo],lista_cantidad_vehiculos[i_costo], carga)
         tupla_menor_tiempo=(lista_costo[i_tiempo],lista_tiempo[i_tiempo],lista_rutas[i_tiempo],lista_tipos[i_tiempo],lista_cantidad_vehiculos[i_tiempo], carga)
         return tupla_menor_costo, tupla_menor_tiempo
+    
     @staticmethod
     def calcular_costo_tiempo(ruta,carga,tipo_transporte): # ruta es lista de conexiones. #ruta= [zarate->bsas, bsas->mdp] cada uno es un objeto conexion
         costo_total = 0
         tiempo_total = 0
-        
+
+        if tipo_transporte.lower() == "automotor":
+            vehiculo = Sistema_de_Transporte.Automotor()
+        elif tipo_transporte.lower() == "aerea":
+            vehiculo = Sistema_de_Transporte.Aerea()
+        elif tipo_transporte.lower() == "fluvial":
+            vehiculo = Sistema_de_Transporte.Fluvial()
+        elif tipo_transporte.lower() == "ferroviaria":
+            vehiculo = Sistema_de_Transporte.Ferroviaria()
+        else:
+            raise ValueError("Tipo de transporte no reconocido.")
+
+        cantidad_vehiculos = Planificador.cantidad_vehiculos(ruta, vehiculo, carga)
+
+        costo_variable_total = 0
+        if isinstance(vehiculo, Sistema_de_Transporte.Automotor):
+            capacidad_efectiva = vehiculo.capacidad_carga
+            for conexion in ruta:
+                if getattr(conexion, 'restriccion', None) == "peso_max":
+                    valor = getattr(conexion, 'valor_restriccion', None)
+                    if valor:
+                        capacidad_efectiva = min(capacidad_efectiva, float(valor))
+            carga_restante = carga
+            while carga_restante > 0:
+                carga_vehiculo = min(capacidad_efectiva, carga_restante)
+                costo_kg = 2 if carga_vehiculo > 15000 else 1
+                costo_variable_total += carga_vehiculo * costo_kg
+                carga_restante -= carga_vehiculo
+        else:
+            costo_variable_total = vehiculo.costo_kg * carga
+
         for conexion in ruta:
-            if tipo_transporte.lower()=="aerea":  #CHEQUEAR COMO SE ESCRIBEN LOS STRINGS ESTOS
-                if conexion.restriccion == 'prob_mal_tiempo':
-                    prob = float(conexion.valor_restriccion)
+            if tipo_transporte.lower() == "aerea":
+                if getattr(conexion, 'restriccion', None) == 'prob_mal_tiempo':
+                    prob = float(getattr(conexion, 'valor_restriccion', 0))
                     velocidad = Planificador.determinar_vel(prob)
-                    vehiculo=Sistema_de_Transporte.Aerea(velocidad)
+                    vehiculo = Sistema_de_Transporte.Aerea(velocidad)
                 else:
-                    vehiculo=Sistema_de_Transporte.Aerea()
-                    
-            elif tipo_transporte.lower()=="fluvial":
-                if conexion.valor_restriccion.lower() == "fluvial":
-                    vehiculo=Sistema_de_Transporte.Fluvial(costo_fijo = 500)
-                elif conexion.valor_restriccion.lower() == "maritima":
-                    vehiculo=Sistema_de_Transporte.Fluvial(costo_fijo = 1500)
+                    vehiculo = Sistema_de_Transporte.Aerea()
+
+            elif tipo_transporte.lower() == "fluvial":
+                valor_restriccion = getattr(conexion, 'valor_restriccion', '').lower()
+                if valor_restriccion == "fluvial":
+                    vehiculo = Sistema_de_Transporte.Fluvial(costo_fijo=500)
+                elif valor_restriccion == "maritima":
+                    vehiculo = Sistema_de_Transporte.Fluvial(costo_fijo=1500)
                 else:
-                    vehiculo=Sistema_de_Transporte.Fluvial()
-                
-            elif tipo_transporte.lower()=="automotor":
-                vehiculo=Sistema_de_Transporte.Automotor(costo_kg=2)              
-                
+                    vehiculo = Sistema_de_Transporte.Fluvial()
+
             elif tipo_transporte.lower() == "ferroviaria":
-                if conexion.restriccion == 'velocidad_max':
-                    velocidad = min(100, float(conexion.valor_restriccion))
+                if getattr(conexion, 'restriccion', None) == 'velocidad_max':
+                    velocidad = min(100, float(getattr(conexion, 'valor_restriccion', 100)))
                     if conexion.distancia < 200:
-                        vehiculo=Sistema_de_Transporte.Ferroviaria(velocidad,costo_km = 20)
+                        vehiculo = Sistema_de_Transporte.Ferroviaria(velocidad, costo_km=20)
                     else:
-                        vehiculo=Sistema_de_Transporte.Ferroviaria(velocidad,costo_km = 15)
+                        vehiculo = Sistema_de_Transporte.Ferroviaria(velocidad, costo_km=15)
                 else:
-                    vehiculo=Sistema_de_Transporte.Ferroviaria()
-            cantidad_vehiculos = Planificador.cantidad_vehiculos(ruta, vehiculo, carga)
-            costo_total += Planificador.calcular_costo(conexion,cantidad_vehiculos,vehiculo, carga) # va self?
+                    vehiculo = Sistema_de_Transporte.Ferroviaria()
+
+
+            costo_total += Planificador.calcular_costo(conexion,cantidad_vehiculos,vehiculo)
             tiempo_total += Planificador.calcular_tiempo(conexion, vehiculo)
-        return costo_total,tiempo_total,tipo_transporte, cantidad_vehiculos
         
+        costo_total += costo_variable_total
+
+        return costo_total, tiempo_total, tipo_transporte, cantidad_vehiculos
+
     @staticmethod
     def determinar_vel(prob_mal_tiempo, velocidad_buen_tiempo = 600, velocidad_mal_tiempo = 400):
         

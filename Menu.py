@@ -39,9 +39,9 @@ def menu_principal():
                 itinerario = elegir_itinerario(id, tupla_menor_costo, tupla_menor_tiempo)
                 mostrar_grafs=input("Presione 1 para que se le impriman los graficos:  ")
                 if mostrar_grafs=="1": 
-                    Graficas.Graficos.graficar_distancia_vs_tiempo(itinerario.vehiculo, itinerario.ruta,itinerario.carga)
-                    Graficas.Graficos.graficar_costo_vs_distancia(itinerario.vehiculo, itinerario.ruta, itinerario.cantidad_vehiculos. itinerario.carga)
-                    Graficas.Graficos.graficar_costo_vs_tiempo(itinerario.vehiculo, itinerario.ruta, itinerario.cantidad_vehiculos)
+                    Graficas.Graficos.graficar_distancia_vs_tiempo(itinerario.vehiculo, itinerario.ruta)
+                    Graficas.Graficos.graficar_costo_vs_distancia(itinerario.vehiculo, itinerario.ruta, itinerario.cantidad_vehiculos, itinerario.carga)
+                    Graficas.Graficos.graficar_costo_vs_tiempo(itinerario.vehiculo, itinerario.ruta, itinerario.cantidad_vehiculos, itinerario.carga)
             else: 
                  print("No hay solicitudes pendientes.")
         elif opcion == '3':

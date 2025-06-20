@@ -250,15 +250,13 @@ class Planificador: #se instancia UNA VEZ.
 
     @staticmethod
     def obtener_tipo_vehiculo(vehiculo):
-        from Sistema_de_Transporte import Automotor, Aerea, Fluvial, Ferroviaria
-
-        if isinstance(vehiculo, Automotor):
+        if isinstance(vehiculo, Sistema_de_Transporte.Automotor):
             return "automotor"
-        elif isinstance(vehiculo, Aerea):
+        elif isinstance(vehiculo, Sistema_de_Transporte.Aerea):
             return "aerea"
-        elif isinstance(vehiculo, Fluvial):
+        elif isinstance(vehiculo, Sistema_de_Transporte.Fluvial):
             return "fluvial"
-        elif isinstance(vehiculo, Ferroviaria):
+        elif isinstance(vehiculo, Sistema_de_Transporte.Ferroviaria):
             return "ferroviaria"
         else:
             raise ValueError("Tipo de transporte no reconocido")

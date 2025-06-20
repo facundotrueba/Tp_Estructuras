@@ -35,8 +35,12 @@ def menu_principal():
             cargar_sistema()
         elif opcion == '2':
             if Solicitud.Solicitud_Transporte.hay_solicitudes():
-                id, tupla_menor_costo, tupla_menor_tiempo = Planero.procesar_siguiente() 
-                itinerario = elegir_itinerario(id, tupla_menor_costo, tupla_menor_tiempo)
+                try:
+                    id, tupla_menor_costo, tupla_menor_tiempo = Planero.procesar_siguiente() 
+                    itinerario = elegir_itinerario(id, tupla_menor_costo, tupla_menor_tiempo)
+                except TypeError as e:
+                    print(e)
+                    return
                 mostrar_grafs=input("Presione 1 para que se le impriman los graficos:  ")
                 if mostrar_grafs=="1": 
                     Graficas.Graficos.graficar_distancia_vs_tiempo(itinerario.vehiculo, itinerario.ruta)

@@ -8,13 +8,18 @@ def leer_csv(nombre_archivo):
     try:
         with open(nombre_archivo, mode="r",encoding="utf-8") as file:
             lector = csv.reader(file)
-            next(lector) 
+            i=0
+            #next(lector) 
             for fila in lector:
-                datos.append(fila)
-        return datos
+                if i == 0:
+                    i = 1
+                else:
+                    datos.append(fila)
+            return datos
     except FileNotFoundError:
         print("Archivo no encontrado")
         return []
+    
 def validar_datos(datos, nombre_archivo):
     if not datos:
         raise ValueError(f"Archivo '{nombre_archivo}' vacío o no válido.")

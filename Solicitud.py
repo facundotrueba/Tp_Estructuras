@@ -1,6 +1,6 @@
 from collections import deque
 class Solicitud_Transporte:
-    cola_solicitudes = deque() #colacha ()
+    cola_solicitudes = deque() 
     def __init__(self, id_carga, peso_kg, origen, destino):
         if peso_kg <= 0: #Validaciones
             raise ValueError("El peso debe ser mayor a cero.")

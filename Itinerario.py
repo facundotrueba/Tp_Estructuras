@@ -14,8 +14,5 @@ class Itinerario:
     def mostrar_resumen(self):
         descripcion_tramos = " → ".join(str(conex) for conex in self.ruta)
         horas = int(self.tiempo)
-        minutos = int((self.tiempo - horas) * 60)
+        minutos = int(round((self.tiempo - horas) * 60))
         print(f"Itinerario: {descripcion_tramos}\n Cantidad de conexiones: {len(self.ruta)}\n Tiempo total: {horas} h {minutos} m \n Costo total: ${self.costo}\n KPI optimizado: {self.optimizacion}")  # si tenés ese atributo
-
-    
-    

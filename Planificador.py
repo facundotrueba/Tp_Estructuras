@@ -121,7 +121,7 @@ class Planificador: #se instancia UNA VEZ.
             carga_restante = carga
             while carga_restante > 0:
                 carga_vehiculo = min(capacidad_efectiva, carga_restante)
-                costo_kg = 2 if carga_vehiculo > 15000 else 1
+                costo_kg = 2 if carga_vehiculo >= 15000 else 1
                 costo_variable_total += carga_vehiculo * costo_kg
                 carga_restante -= carga_vehiculo
         else:

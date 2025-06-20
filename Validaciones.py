@@ -14,6 +14,12 @@ def leer_csv(nombre_archivo):
         return datos
     except FileNotFoundError:
         print("Archivo no encontrado")
+        return []
+def validar_datos(datos, nombre_archivo):
+    if not datos:
+        raise ValueError(f"Archivo '{nombre_archivo}' vacío o no válido.")
+    return True
+
 
 def validar_conexion(lista):
     tipos = ("fluvial", "aerea", "automotor", "ferroviaria")
@@ -94,7 +100,12 @@ def validar_conexion(lista):
     return lista
                                      
 def cargar_conexiones(nombre_archivo):
-    datos = leer_csv(nombre_archivo)
+    try:
+        datos = leer_csv(nombre_archivo)
+        validar_datos(datos, nombre_archivo)
+    except ValueError as e:
+        print(e)
+        return
     i =1
     for fila in datos:
         if fila:
@@ -108,9 +119,6 @@ def cargar_conexiones(nombre_archivo):
     if i:
         print('Conexiones cargadas exitosamente.')
 def validar_nodo(entrada):
-    """
-    Valida que la entrada para un nodo sea un string válido y no esté duplicado.
-    """
     if not isinstance(entrada, str):
         raise TypeError("El nombre del nodo debe ser un string.")
 
@@ -125,7 +133,12 @@ def validar_nodo(entrada):
     return nombre
 
 def cargar_nodos(nombre_archivo):
-    datos = leer_csv(nombre_archivo)
+    try:
+        datos = leer_csv(nombre_archivo)
+        validar_datos(datos, nombre_archivo)
+    except ValueError as e:
+        print(e)
+        return
     i= 1
     for fila in datos:
         if fila:  # chequea que no esté vacía
@@ -153,9 +166,8 @@ def validar_solicitud(fila):
     # Validar peso
     peso = float(peso)
     if peso <= 0:
-        raise ValueError("El peso debe ser un número positivo")   #PROBAR ESTO
+        raise ValueError("El peso debe ser un número positivo")   
 
-    # Validar nodos
     origen_nodo = Nodo.Nodo.get_nombre(origen)
     destino_nodo = Nodo.Nodo.get_nombre(destino)
 
@@ -170,7 +182,12 @@ def validar_solicitud(fila):
 
 
 def cargar_solicitudes(nombre_archivo):
-    datos = leer_csv(nombre_archivo)
+    try:
+        datos = leer_csv(nombre_archivo)
+        validar_datos(datos, nombre_archivo)
+    except ValueError as e:
+        print(e)
+        return
     i=1
     for fila in datos:
         if fila:
@@ -183,9 +200,4 @@ def cargar_solicitudes(nombre_archivo):
     if i:
         print('Solicitudes cargadas exitosamente.')
         
-                
-'''
-Pensar funciones agregar/borrar conexiones, nodos, vehiculos
-Esto se agregaria en los inits (en este caso se sacaria de cargar_conexiones pero sirve para una futura funcion de agregar conexion)
-
-'''
+            

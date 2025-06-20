@@ -19,6 +19,18 @@ class Planificador: #se instancia UNA VEZ.
         solicitud = Solicitud.Solicitud_Transporte.cola_solicitudes.popleft()
 
         grafo=Planificador.construir_grafo(Conexion.Conexion.conexiones_por_tipo)
+
+
+        # Validacion para evitar errores si los nodos estan desconectados
+        origen = solicitud.origen.nombre if isinstance(solicitud.origen, Nodo.Nodo) else solicitud.origen
+        destino = solicitud.destino.nombre if isinstance(solicitud.destino, Nodo.Nodo) else solicitud.destino
+
+        if origen not in grafo:
+            print(f" El nodo de origen '{origen}' no está conectado a ninguna ruta.")
+            return solicitud.id_carga, None, None
+        if destino not in grafo and not any(con.destino == destino for conexiones in grafo.values() for con in conexiones):
+            print(f" El nodo de destino '{destino}' no está conectado a ninguna ruta.")
+            return solicitud.id_carga, None, None
         
         dic_rutas=Planificador.encontrar_todas_rutas(grafo,solicitud.origen, solicitud.destino)
 

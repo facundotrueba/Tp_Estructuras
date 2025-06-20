@@ -47,7 +47,7 @@ def menu_principal():
         elif opcion == '3':
             print('Programa terminado')
             salir = True
-        else:#aca deberia tirar un raiserror
+        else:
             print(f'Opcion "{opcion}" inválida. Se espera (1-2-3).')
 
 def elegir_itinerario(id, menor_costo, menor_tiempo):

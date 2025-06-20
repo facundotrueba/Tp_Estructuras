@@ -37,6 +37,8 @@ def validar_conexion(lista):
     lista[5] = None if lista[5] == '' else lista[5]
     if Nodo.Nodo.get_nombre(lista[0]) is None:  
         raise ValueError(f'Nodo "{lista[0]}" inexistente')
+    if Nodo.Nodo.get_nombre(lista[0]) == Nodo.Nodo.get_nombre(lista[1]):
+        raise ValueError(f'El origen de una conexión no puede ser igual a su destino')
     if Nodo.Nodo.get_nombre(lista[1]) is None:  
         raise ValueError(f'Nodo "{lista[1]}" inexistente')
     if lista[2] not in tipos:
@@ -47,7 +49,7 @@ def validar_conexion(lista):
         try:
             lista[3] = float(lista[3])
         except ValueError:
-            raise ValueError('El valor de la restricción debe ser un número válido')
+            raise ValueError('El valor de la distancia debe ser un número válido')
         if lista[3] <= 0:
             raise ValueError(f'La distancia no puede ser negativa o 0')
     if (lista[4] == None and lista[5]) or (lista[5] == None and lista[4]):

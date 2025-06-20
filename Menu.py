@@ -4,6 +4,7 @@ import Itinerario
 import Solicitud
 import Graficas
 import Sistema_de_Transporte
+import Conexion
 def cargar_sistema():
             try:
                 Validaciones.cargar_nodos('nodos.csv')
@@ -30,6 +31,7 @@ def menu_principal():
         print('1. Cargar nodos, conexiones y solicitudes')
         print('2. Procesar solicitud')
         print('3. Salir')
+
         opcion = input("Seleccione una opción (1-3): ").strip() 
         if opcion == '1':
             cargar_sistema()
@@ -43,9 +45,19 @@ def menu_principal():
                     return
                 mostrar_grafs=input("Presione 1 para que se le impriman los graficos:  ")
                 if mostrar_grafs=="1": 
-                    Graficas.Graficos.graficar_distancia_vs_tiempo(itinerario.vehiculo, itinerario.ruta)
-                    Graficas.Graficos.graficar_costo_vs_distancia(itinerario.vehiculo, itinerario.ruta, itinerario.cantidad_vehiculos, itinerario.carga)
-                    Graficas.Graficos.graficar_costo_vs_tiempo(itinerario.vehiculo, itinerario.ruta, itinerario.cantidad_vehiculos, itinerario.carga)
+                        try:
+                            ruta = itinerario.ruta
+                            carga = itinerario.carga
+                            grafo = Planificador.Planificador.construir_grafo(Conexion.Conexion.conexiones_por_tipo)
+                            dic_rutas = Planificador.Planificador.encontrar_todas_rutas(
+                                grafo, ruta[0].origen, ruta[-1].destino
+                            )
+                            Graficas.Graficos.graficar_distancia_vs_tiempo_todas_rutas(dic_rutas)
+                            Graficas.Graficos.graficar_costo_vs_distancia_todas_rutas(dic_rutas, carga)
+                            Graficas.Graficos.graficar_costo_vs_tiempo_todas_rutas(dic_rutas, carga)
+
+                        except Exception as e:
+                            print(f"Error al graficar rutas múltiples: {e}")
             else: 
                  print("No hay solicitudes pendientes.")
         elif opcion == '3':

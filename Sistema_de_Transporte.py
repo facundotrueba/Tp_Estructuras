@@ -2,9 +2,9 @@
 class Tipo_transporte:
     def __init__(self, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg): #lo de los costos hacer archivo csv CHEQUEAR LUCAS
         if velocidad_nominal <= 0:
-            ValueError("La velocidad no puede ser negativa")
+            raise ValueError("La velocidad no puede ser negativa")
         if capacidad_carga <= 0:
-            ValueError("La capacidad de carga no puede ser negativa")
+            raise ValueError("La capacidad de carga no puede ser negativa")
         self.velocidad_nominal=velocidad_nominal
         self.capacidad_carga=capacidad_carga
         self.costo_fijo = costo_fijo

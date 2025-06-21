@@ -178,7 +178,7 @@ class Utilidades_Menu:
 
     @staticmethod
     def elegir_itinerario(id, menor_costo, menor_tiempo):
-        print('Elegí la ruta según lo que quieras optimizar \n1. Tiempo\n2. Costo')
+        print('Elegí el metodo de optimización \n1. Tiempo\n2. Costo')
         opcion = input('Introduzca la opción elegida (1-2): ').strip()
 
         if opcion == '1':

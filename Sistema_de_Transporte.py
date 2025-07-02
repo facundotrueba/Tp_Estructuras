@@ -11,6 +11,18 @@ class Tipo_transporte:
         self.costo_km = costo_km
         self.costo_kg = costo_kg
     
+    @staticmethod
+    def obtener_tipo_vehiculo(vehiculo):
+        if isinstance(vehiculo,Automotor):
+            return "automotor"
+        elif isinstance(vehiculo,Aerea):
+            return "aerea"
+        elif isinstance(vehiculo,Fluvial):
+            return "fluvial"
+        elif isinstance(vehiculo,Ferroviaria):
+            return "ferroviaria"
+        else:
+            raise ValueError("Tipo de transporte no reconocido")
 
 
 class Automotor(Tipo_transporte): # el codigo va a funcionar de tal manera que si se arranca una ruta con 8 automotores, Si se puede despues hacer con 10 automotores y despues 8 de vuelta en otra conexion

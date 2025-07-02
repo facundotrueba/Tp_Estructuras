@@ -95,7 +95,7 @@ class Planificador: #se instancia UNA VEZ.
         rutas_por_tipo = {}
         for tipo in list(Conexion.Conexion.tipos):
             tipo = tipo.lower()
-            rutas = Planificador.encontrar_rutas_tipo(grafo, nodo_inicio, nodo_fin, tipo) #va self?
+            rutas = Planificador.encontrar_rutas_tipo(grafo, nodo_inicio, nodo_fin, tipo) 
             if rutas:
                 rutas_por_tipo[tipo] = rutas
         return rutas_por_tipo #esto si devuelve un diccionario con cada clave siendo cada tipo y cada valor siendo una lista de rutas (lista de listas).
@@ -259,7 +259,11 @@ class Planificador: #se instancia UNA VEZ.
             return velocidad_mal_tiempo
         else:
             return velocidad_buen_tiempo
+        
 
+
+
+""" LO MOVI A SISTEMA DE TRANSPORTE< CHEQUEAR
     @staticmethod
     def obtener_tipo_vehiculo(vehiculo):
         if isinstance(vehiculo, Sistema_de_Transporte.Automotor):
@@ -272,3 +276,4 @@ class Planificador: #se instancia UNA VEZ.
             return "ferroviaria"
         else:
             raise ValueError("Tipo de transporte no reconocido")
+            """

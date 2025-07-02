@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import Planificador
+import Sistema_de_Transporte
 
 class Graficos:
     @staticmethod
@@ -10,7 +11,7 @@ class Graficos:
         tiempos = np.empty(n_pts)
         distancias[0] = tiempos[0] = 0
         distancia_acum = tiempo_acum = 0
-        tipo_transporte = Planificador.Planificador.obtener_tipo_vehiculo(vehiculo)
+        tipo_transporte = Sistema_de_Transporte.Tipo_transporte.obtener_tipo_vehiculo(vehiculo)
 
         for idx, conexion in enumerate(ruta, start=1):
             vehiculo_ajustado = Planificador.Planificador.ajustar_vehiculo_por_conexion(conexion, tipo_transporte)

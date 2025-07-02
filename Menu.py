@@ -115,19 +115,18 @@ import Sistema_de_Transporte
 import Conexion
 
 class Utilidades_Menu:
-    
     @staticmethod
     def cargar_sistema():
         try:
-            Validaciones.cargar_nodos('nodos.csv')
+            Validaciones.ValidarNodos.cargar('nodos.csv')
         except FileNotFoundError as e:
             print(f'Error al cargar nodos: "{e}"')
         try:
-            Validaciones.cargar_conexiones('conexiones.csv')
+            Validaciones.ValidarConexiones.cargar('conexiones.csv')
         except FileNotFoundError as e:
             print(f'Error al cargar conexiones: "{e}"')
         try:
-            Validaciones.cargar_solicitudes('solicitudes.csv')
+            Validaciones.ValidarSolicitud.cargar('solicitudes.csv')
         except FileNotFoundError as e:
             print(f'Error al cargar solicitudes: {e}')
 

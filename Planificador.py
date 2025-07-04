@@ -1,26 +1,25 @@
-import random
+import Sistema_de_Transporte
 import Conexion
 import Solicitud
-import Sistema_de_Transporte
-import math
 import Nodo
+
 class Planificador: #se instancia UNA VEZ.
     def __init__(self, nombre):
         self.nombre=nombre
         print(f"Planificador: {self.nombre}")
 
+        '''     def procesar_anterior(self):
+        if not Solicitud.Solicitud_Transporte.pila_solicitudes_procesadas:
+            print("No hay solicitudes pendientes.")
+            return None, None, None
+            '''
     def procesar_siguiente(self):
-        """
-        Desencola y retorna la siguiente solicitud.
-        """
+        #Desencola y retorna la siguiente solicitud.
         if not Solicitud.Solicitud_Transporte.cola_solicitudes:
             print("No hay solicitudes pendientes.")
             return None, None, None
         solicitud = Solicitud.Solicitud_Transporte.cola_solicitudes.popleft()
-
         grafo=Planificador.construir_grafo(Conexion.Conexion.conexiones_por_tipo)
-
-
         # Validacion para evitar errores si los nodos estan desconectados
         origen = solicitud.origen.nombre if isinstance(solicitud.origen, Nodo.Nodo) else solicitud.origen
         destino = solicitud.destino.nombre if isinstance(solicitud.destino, Nodo.Nodo) else solicitud.destino
@@ -37,7 +36,7 @@ class Planificador: #se instancia UNA VEZ.
         tupla_menor_costo, tupla_menor_tiempo= Planificador.analisis_costo_tiempo(dic_rutas,solicitud.peso_kg) #las tuplas van: (costo,tiempo,ruta,tipo)
         
         return solicitud.id_carga,tupla_menor_costo, tupla_menor_tiempo
-
+    
     @staticmethod
     def construir_grafo(diccionario):
         grafo = {}
@@ -87,9 +86,8 @@ class Planificador: #se instancia UNA VEZ.
                 nuevos_visitados = set(nodos_visitados)
                 nuevos_visitados.add(destino)
                 rutas += Planificador.encontrar_rutas_tipo(grafo, nodo_inicio, nodo_fin, tipo, nuevo_camino, nuevos_visitados)
-
-    
         return rutas  #esto devuielve una lista de rutas (lista de listas). Cada ruta es una lista de conexiones que hay entre los nodos. 
+    
     @staticmethod   
     def encontrar_todas_rutas(grafo, nodo_inicio, nodo_fin):
         rutas_por_tipo = {}
@@ -107,6 +105,38 @@ class Planificador: #se instancia UNA VEZ.
         return min(range(len(lista)), key=lambda i: lista[i])
     
     @staticmethod
+    def analisis_costo_tiempo(diccionario_rutas,carga):# el diccionario_rutas es un diccionario de encontrar_todas_rutas
+        lista_costo = []
+        lista_tiempo = []
+        lista_rutas = []
+        lista_tipos=[]
+        lista_cantidad_vehiculos = []
+        
+        for tipo_transporte,lista_rutas_dic in diccionario_rutas.items() :
+            for ruta in lista_rutas_dic:
+                costo_total, tiempo_total,tipo, cantidad_vehiculos = Sistema_de_Transporte.Tipo_transporte.calcular_costo_tiempo(ruta,carga,tipo_transporte)
+                lista_rutas.append(ruta)
+                lista_costo.append(costo_total)
+                lista_tiempo.append(tiempo_total)
+                lista_tipos.append(tipo)
+                lista_cantidad_vehiculos.append(cantidad_vehiculos)
+                
+        if not lista_costo or not lista_tiempo:
+             print("No hay rutas válidas para calcular.")
+             return None, None
+       
+        i_costo = Planificador.indice_mas_bajo(lista_costo)
+        i_tiempo = Planificador.indice_mas_bajo(lista_tiempo)
+        
+        tupla_menor_costo=(lista_costo[i_costo],lista_tiempo[i_costo],lista_rutas[i_costo],lista_tipos[i_costo],lista_cantidad_vehiculos[i_costo], carga)
+        tupla_menor_tiempo=(lista_costo[i_tiempo],lista_tiempo[i_tiempo],lista_rutas[i_tiempo],lista_tipos[i_tiempo],lista_cantidad_vehiculos[i_tiempo], carga)
+        return tupla_menor_costo, tupla_menor_tiempo
+    
+    
+    
+    
+    """ LO LLEVO A SISTEMA DE TRANSPORTE
+    @staticmethod
     def crear_vehiculo_base(tipo_transporte):
         tipo = tipo_transporte.lower()
         if tipo == "automotor":
@@ -119,8 +149,9 @@ class Planificador: #se instancia UNA VEZ.
             return Sistema_de_Transporte.Ferroviaria()
         else:
             raise ValueError("Tipo de transporte no reconocido.")
+    """
 
-    @staticmethod
+    ''' @staticmethod
     def calcular_costo_variable(ruta, vehiculo, carga):
         costo_variable_total = 0
         if isinstance(vehiculo, Sistema_de_Transporte.Automotor):
@@ -138,8 +169,8 @@ class Planificador: #se instancia UNA VEZ.
                 carga_restante -= carga_vehiculo
         else:
             costo_variable_total = vehiculo.costo_kg * carga
-        return costo_variable_total
-
+        return costo_variable_total '''
+''' 
     @staticmethod
     def ajustar_vehiculo_por_conexion(conexion, tipo_transporte):
         tipo = tipo_transporte.lower()
@@ -168,7 +199,6 @@ class Planificador: #se instancia UNA VEZ.
             else:
                 return Sistema_de_Transporte.Ferroviaria(velocidad, costo_km=15)
         else:
-
             return None
 
         
@@ -236,7 +266,7 @@ class Planificador: #se instancia UNA VEZ.
     def calcular_costo_tiempo(ruta,carga,tipo_transporte): # ruta es lista de conexiones. #ruta= [zarate->bsas, bsas->mdp] cada uno es un objeto conexion
         costo_total = 0
         tiempo_total = 0
-        vehiculo = Planificador.crear_vehiculo_base(tipo_transporte)
+        vehiculo = Sistema_de_Transporte.Tipo_transporte.crear_vehiculo_base(tipo_transporte)
         cantidad_vehiculos = Planificador.cantidad_vehiculos(ruta, vehiculo, carga)
         costo_variable_total = Planificador.calcular_costo_variable(ruta, vehiculo, carga)
         for conexion in ruta:
@@ -260,7 +290,7 @@ class Planificador: #se instancia UNA VEZ.
         else:
             return velocidad_buen_tiempo
         
-
+ '''
 
 
 """ LO MOVI A SISTEMA DE TRANSPORTE< CHEQUEAR

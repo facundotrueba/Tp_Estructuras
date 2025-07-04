@@ -14,10 +14,10 @@ class Graficos:
         tipo_transporte = Sistema_de_Transporte.Tipo_transporte.obtener_tipo_vehiculo(vehiculo)
 
         for idx, conexion in enumerate(ruta, start=1):
-            vehiculo_ajustado = Planificador.Planificador.ajustar_vehiculo_por_conexion(conexion, tipo_transporte)
+            vehiculo_ajustado = Sistema_de_Transporte.Tipo_transporte.ajustar_vehiculo_por_conexion(conexion, tipo_transporte)
             if vehiculo_ajustado is None:
                 vehiculo_ajustado = vehiculo
-            tiempo_acum += Planificador.Planificador.calcular_tiempo(conexion, vehiculo_ajustado)
+            tiempo_acum += vehiculo_ajustado.calcular_tiempo(conexion)
             distancia_acum += conexion.distancia
             tiempos[idx] = tiempo_acum
             distancias[idx] = distancia_acum
@@ -44,10 +44,10 @@ class Graficos:
         distancias[0] = 0
         costo_acum = distancia_acum = 0
         
-        costo_variable = Planificador.Planificador.calcular_costo_variable(ruta, vehiculo, carga)
+        costo_variable = vehiculo.calcular_costo_variable(carga,ruta)
         costos[0] = costo_variable
         for idx, conexion in enumerate(ruta, start=1):
-            costo_fijo = Planificador.Planificador.calcular_costo(conexion, cantidad_vehiculos, vehiculo)
+            costo_fijo = vehiculo.calcular_costo(conexion, cantidad_vehiculos)
             costo_acum += costo_fijo
             distancia_acum += conexion.distancia
             costos[idx] = costo_acum + costo_variable
@@ -73,17 +73,17 @@ class Graficos:
         costos = np.empty(n_pts)
         
         tiempo_acum = costo_acum = 0
-        tipo_transporte = Planificador.Planificador.obtener_tipo_vehiculo(vehiculo)
-        costo_variable = Planificador.Planificador.calcular_costo_variable(ruta, vehiculo, carga)
+        tipo_transporte = Sistema_de_Transporte.Tipo_transporte.obtener_tipo_vehiculo(vehiculo)
+        costo_variable = vehiculo.calcular_costo_variable(carga,ruta)
         tiempos[0] =  0
         costos[0] = costo_variable
 
         for idx, conexion in enumerate(ruta, start=1):
-            vehiculo_ajustado = Planificador.Planificador.ajustar_vehiculo_por_conexion(conexion, tipo_transporte)
+            vehiculo_ajustado = Sistema_de_Transporte.Tipo_transporte.ajustar_vehiculo_por_conexion(conexion, tipo_transporte)
             if vehiculo_ajustado is None:
                 vehiculo_ajustado = vehiculo
-            tiempo_acum += Planificador.Planificador.calcular_tiempo(conexion, vehiculo_ajustado)
-            costo_fijo = Planificador.Planificador.calcular_costo(conexion, cantidad_vehiculos, vehiculo)
+            tiempo_acum +=  vehiculo_ajustado.calcular_tiempo(conexion)
+            costo_fijo =  vehiculo.calcular_costo(conexion, cantidad_vehiculos)
             costo_acum += costo_fijo
             tiempos[idx] = tiempo_acum
             costos[idx] = costo_acum + costo_variable
@@ -109,7 +109,7 @@ class Graficos:
         ruta_idx = 1
         for tipo_transporte, rutas in dic_rutas.items():
             for ruta in rutas:
-                vehiculo = Planificador.Planificador.crear_vehiculo_base(tipo_transporte)
+                vehiculo = Sistema_de_Transporte.Tipo_transporte.crear_vehiculo_base(tipo_transporte)
                 distancias, tiempos = Graficos.calcular_arrays_distancia_tiempo_acumulados(vehiculo,ruta)
                 plt.plot(tiempos, distancias, marker='o', label=f'Ruta{ruta_idx} ({tipo_transporte})')
                 print(f"Ruta {ruta_idx}:")
@@ -130,8 +130,8 @@ class Graficos:
         ruta_idx = 1
         for tipo_transporte, rutas in dic_rutas.items():
             for ruta in rutas:
-                vehiculo = Planificador.Planificador.crear_vehiculo_base(tipo_transporte)
-                cantidad_vehiculos = Planificador.Planificador.cantidad_vehiculos(ruta, vehiculo, carga)
+                vehiculo = Sistema_de_Transporte.Tipo_transporte.crear_vehiculo_base(tipo_transporte)
+                cantidad_vehiculos = vehiculo.cantidad_vehiculos(carga, ruta)
                 costos, distancias = Graficos.calcular_arrays_costo_distancia_acumulada(vehiculo, ruta, cantidad_vehiculos, carga)
                 plt.plot(distancias, costos, marker='o', label=f'Ruta {ruta_idx} ({tipo_transporte})')
                 ruta_idx += 1
@@ -149,8 +149,8 @@ class Graficos:
         ruta_idx = 1
         for tipo_transporte, rutas in dic_rutas.items():
             for ruta in rutas:
-                vehiculo = Planificador.Planificador.crear_vehiculo_base(tipo_transporte)
-                cantidad_vehiculos = Planificador.Planificador.cantidad_vehiculos(ruta, vehiculo, carga)
+                vehiculo = Sistema_de_Transporte.Tipo_transporte.crear_vehiculo_base(tipo_transporte)
+                cantidad_vehiculos = vehiculo.cantidad_vehiculos(carga, ruta)
                 tiempos, costos = Graficos.calcular_arrays_costo_tiempo_acumulado(vehiculo, ruta, cantidad_vehiculos, carga)
                 plt.plot(tiempos, costos, marker='o', label=f'Ruta {ruta_idx} ({tipo_transporte})')
                 ruta_idx += 1

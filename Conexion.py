@@ -1,4 +1,5 @@
 import Nodo
+import Leer
 #DICCIONARIO: CLAVE 1 TIPO, CLAVE 2 NODO, CLAVE 3 DESTINO, lista (dist, restriccion, valor_restriccion)
 class Conexion: 
     conexiones_por_tipo = {} #clave=tipo, valor=set de conexiones del tipo
@@ -64,3 +65,104 @@ class Conexion:
 
     def __hash__(self): #Resolver! Puede que tengamos que cambiar la estructura
         return hash((self.origen, self.destino, self.tipo, self.distancia, self.restriccion, self.valor_restriccion))
+
+    @staticmethod
+    def validar(lista):
+        tipos = ("fluvial", "aerea", "automotor", "ferroviaria")
+        for i in range(len(lista)):
+            if isinstance(lista[i], str):
+                lista[i] = lista[i].strip().lower()
+        if len(lista) != 6:
+            raise TypeError('Cantidad de atributos insuficientes para instanciar una conexión')
+        lista[4] = None if lista[4] == '' else lista[4]
+        lista[5] = None if lista[5] == '' else lista[5]
+        if Nodo.Nodo.get_nombre(lista[0]) is None:  
+            raise ValueError(f'Nodo "{lista[0]}" inexistente')
+        if Nodo.Nodo.get_nombre(lista[0]) == Nodo.Nodo.get_nombre(lista[1]):
+            raise ValueError(f'El origen de una conexión no puede ser igual a su destino')
+        if Nodo.Nodo.get_nombre(lista[1]) is None:  
+            raise ValueError(f'Nodo "{lista[1]}" inexistente')
+        if lista[2] not in tipos:
+            raise ValueError(f'El tipo ingresado "{lista[2]}" es invalido')
+        if not isinstance(lista[3], (int, float, str)):
+            raise TypeError(f'Tipo de dato incorrecto para el atributo Distancia')
+        else:
+            try:
+                lista[3] = float(lista[3])
+            except ValueError:
+                raise ValueError('El valor de la distancia debe ser un número válido')
+            if lista[3] <= 0:
+                raise ValueError(f'La distancia no puede ser negativa o 0')
+        if (lista[4] == None and lista[5]) or (lista[5] == None and lista[4]):
+            raise ValueError(f'Error en la restricción y el valor de la misma')
+        if not (lista[4] == None and lista[5] == None):
+            if lista[2] == 'fluvial':
+                if not (lista[4] == 'tipo'):
+                    raise ValueError(f'La restricción "{lista[4]}" es invalida para el transporte fluvial')
+                else:
+                    if not isinstance(lista[5],str):
+                        raise TypeError(f'Tipo de dato incorrecto para el valor de la restricción')
+                    elif not (lista[5] == 'fluvial' or lista[5] == 'maritimo'):
+                        raise ValueError(f'El valor de la restricción {lista[5]} es inválido para la restricción')
+            if lista[2] == 'aerea':
+                if not (lista[4] == 'prob_mal_tiempo'):
+                    raise ValueError(f'La restricción "{lista[4]}" es invalida para el transporte aéreo')
+                else:
+                    if not isinstance(lista[5], (int, float, str)):
+                        raise TypeError(f'Tipo de dato incorrecto para el valor de la restricción')                
+                    else:
+                        try:
+                            lista[5] = float(lista[5])
+                        except ValueError:
+                            raise ValueError('El valor de la restricción debe ser un número válido')
+                        if not (1 > lista[5] > 0):
+                            raise ValueError(f'El valor de la restricción es inválido')
+            if lista[2] == 'ferroviaria':
+                if not (lista[4] == 'velocidad_max'):
+                    raise ValueError(f'La restricción "{lista[4]}" es invalida para el transporte ferroviario')
+                else:
+                    if not isinstance(lista[5], (int, str, float)):
+                        raise ValueError(f'El valor de la restricción es inválido')    
+                    else:
+                        try:
+                            lista[5] = float(lista[5])
+                        except ValueError:
+                            raise ValueError('El valor de la restricción debe ser un número válido')
+                        if not (lista[5] > 0):
+                            raise ValueError(f'El valor de la restricción es inválido')
+            if lista[2] == 'automotor':
+                if not (lista[4] == 'peso_max'):
+                    raise ValueError(f'La restricción "{lista[4]}" es invalida para el transporte automotor')
+                else:
+                    if not isinstance(lista[5], (str, int, float)):
+                        raise ValueError(f'El valor de la restricción es inválido')    
+                    else: 
+                        try:
+                            lista[5] = float(lista[5])
+                        except ValueError:
+                            raise ValueError('El valor de la restricción debe ser un número válido')
+                        if not (lista[5] > 0):
+                            raise ValueError(f'El valor de la restricción es inválido')
+        if Conexion.get_conexion(lista[0],lista[1],lista[2],lista[3],lista[4],lista[5]) is not None:
+            raise ValueError(f"La conexion '{lista[0]} a {lista[1]} de tipo: {lista[2]}' ya fue cargado.")
+        return lista
+    @staticmethod                                    
+    def cargar(nombre_archivo):
+        try:
+            datos = Leer.LectorCSV.leer_csv(nombre_archivo)
+            Leer.LectorCSV.validar(datos, nombre_archivo)
+        except ValueError as e:
+            print(e)
+            return
+        i =1
+        for fila in datos:
+            if fila:
+                try:
+                    conexion = Conexion.validar(fila)
+                    Conexion(conexion[0],conexion[1],conexion[2],conexion[3],conexion[4],conexion[5])
+                    Conexion(conexion[1],conexion[0],conexion[2],conexion[3],conexion[4],conexion[5])
+                except (TypeError, ValueError) as e:
+                    print(f"Error al cargar conexiones '{fila[0]}': {e}")
+                    i = 0
+        if i:
+            print('Conexiones cargadas exitosamente.')

@@ -1,7 +1,4 @@
 import csv
-import Nodo
-import Conexion
-import Solicitud
 
 class LectorCSV:
     @staticmethod
@@ -26,7 +23,7 @@ class LectorCSV:
             raise ValueError(f"Archivo '{nombre_archivo}' vacío o no válido.")
         return True
     
-
+"""
 class ValidarConexiones:
     @staticmethod
     def validar(lista):
@@ -213,4 +210,4 @@ class ValidarSolicitud:
         if i:
             print('Solicitudes cargadas exitosamente.')
             
-            
+            """

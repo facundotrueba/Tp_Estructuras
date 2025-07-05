@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import Planificador
+import matplotlib.cm as cm
 import Sistema_de_Transporte
+
 
 class Graficos:
     @staticmethod
@@ -160,3 +161,35 @@ class Graficos:
         plt.legend()
         plt.grid(True)
         plt.show()    
+
+
+
+
+    @staticmethod
+    def graficar_riesgo_total(diccionario_rutas, carga):
+        print("Graficando riesgo total por ruta...")
+
+        nombres_rutas = []
+        valores_riesgo = []
+
+        idx = 1
+        for tipo, rutas in diccionario_rutas.items():
+            for ruta in rutas:
+                _, _, _, _, riesgo_total = Sistema_de_Transporte.Tipo_transporte.calcular_costo_tiempo_riesgo(
+                    ruta, carga, tipo)
+                nombre = f"Ruta {idx} ({tipo})"
+                nombres_rutas.append(nombre)
+                valores_riesgo.append(riesgo_total)
+                idx += 1
+
+        colores = cm.get_cmap('tab10', len(valores_riesgo))(np.arange(len(valores_riesgo)))
+
+        plt.figure(figsize=(12, 6))
+        plt.bar(nombres_rutas, valores_riesgo, color=colores)
+        plt.xlabel("Ruta")
+        plt.ylabel("Riesgo Total")
+        plt.title("Riesgo Total por Ruta")
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
+        plt.grid(axis='y', linestyle='--', alpha=0.7)
+        plt.show()

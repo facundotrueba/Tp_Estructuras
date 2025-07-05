@@ -81,12 +81,10 @@ class Tipo_transporte:
         
     
     def cantidad_vehiculos(self, carga, ruta): #ruta es una lista de conexiones ##aca lo mismo que onda que no se usa ruta
-        
         return math.ceil(carga / self.capacidad_carga)
             
     
     def calcular_costo(self,conexion, cantidad_vehiculos): 
-        
         costo_km = self.costo_km
         costo_fijo = self.costo_fijo
         costo_total = (cantidad_vehiculos * (costo_fijo + costo_km * conexion.distancia)) 
@@ -94,7 +92,6 @@ class Tipo_transporte:
     
     
     def calcular_tiempo(self,conexion):
-        
         distancia = conexion.distancia
         velocidad = self.velocidad_nominal
         return (distancia / velocidad)
@@ -102,29 +99,25 @@ class Tipo_transporte:
     
     
     @staticmethod
-    def calcular_costo_tiempo(ruta,carga,tipo_transporte): # ruta es lista de conexiones. #ruta= [zarate->bsas, bsas->mdp] cada uno es un objeto conexion
+    def calcular_costo_tiempo_riesgo(ruta,carga,tipo_transporte): # ruta es lista de conexiones. #ruta= [zarate->bsas, bsas->mdp] cada uno es un objeto conexion
         costo_total = 0
         tiempo_total = 0
         vehiculo = Tipo_transporte.crear_vehiculo_base(tipo_transporte)
         cantidad_vehiculos = vehiculo.cantidad_vehiculos(carga,ruta)
         costo_variable_total = vehiculo.calcular_costo_variable(carga,ruta)
+        riesgo_ruta = 1
         for conexion in ruta:
-            vehiculo_ajustado = vehiculo.ajustar_vehiculo_por_conexion(conexion, tipo_transporte)
+            vehiculo_ajustado = Tipo_transporte.ajustar_vehiculo_por_conexion(conexion, tipo_transporte)
             if vehiculo_ajustado is not None:
                 vehiculo = vehiculo_ajustado
-            
+            riesgo_ruta = riesgo_ruta * (1-conexion.riesgo)
             costo_total += vehiculo.calcular_costo(conexion,cantidad_vehiculos)
             tiempo_total += vehiculo.calcular_tiempo(conexion)
         
-        costo_total += costo_variable_total
-        return costo_total, tiempo_total, tipo_transporte, cantidad_vehiculos
-
-
-
+        riesgo_total = 1-((riesgo_ruta)**cantidad_vehiculos)
         
-
-
-
+        costo_total += costo_variable_total
+        return costo_total, tiempo_total, tipo_transporte, cantidad_vehiculos, riesgo_total
 
 
 
@@ -134,8 +127,6 @@ class Automotor(Tipo_transporte): # el codigo va a funcionar de tal manera que s
 
     
     def calcular_costo_variable(self, carga, ruta):#cambiE orden
-            
-            
             costo_variable_total = 0
             capacidad_efectiva = self.capacidad_carga
             for conexion in ruta:
@@ -149,7 +140,6 @@ class Automotor(Tipo_transporte): # el codigo va a funcionar de tal manera que s
                 costo_kg = 2 if carga_vehiculo >= 15000 else 1
                 costo_variable_total += carga_vehiculo * costo_kg
                 carga_restante -= carga_vehiculo
-            
             
             return costo_variable_total
     
@@ -192,7 +182,5 @@ class Ferroviaria(Tipo_transporte):
         super().__init__(velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg)
         
 
-#diccionario con cada clave siendo cada tipo y cada valor siendo una lista de rutas (lista de listas).
-# Cada ruta es una lista de conexiones que hay entre los nodos. 
 
 

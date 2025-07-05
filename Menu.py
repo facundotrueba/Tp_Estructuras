@@ -41,8 +41,8 @@ class Utilidades_Menu:
             elif opcion == '2':
                 if Solicitud.Solicitud_Transporte.hay_solicitudes():
                     try:
-                        id, tupla_menor_costo, tupla_menor_tiempo = Planero.procesar_siguiente() 
-                        itinerario = Utilidades_Menu.elegir_itinerario(id, tupla_menor_costo, tupla_menor_tiempo)
+                        id, tupla_menor_costo, tupla_menor_tiempo, tupla_menor_riesgo = Planero.procesar_siguiente() 
+                        itinerario = Utilidades_Menu.elegir_itinerario(id, tupla_menor_costo, tupla_menor_tiempo, tupla_menor_riesgo)
                     except TypeError as e:
                         print(e)
                         return
@@ -58,6 +58,7 @@ class Utilidades_Menu:
                             Graficas.Graficos.graficar_distancia_vs_tiempo_todas_rutas(dic_rutas)
                             Graficas.Graficos.graficar_costo_vs_distancia_todas_rutas(dic_rutas, carga)
                             Graficas.Graficos.graficar_costo_vs_tiempo_todas_rutas(dic_rutas, carga)
+                            Graficas.Graficos.graficar_riesgo_total(dic_rutas, carga)#probar
 
                         except Exception as e:
                             print(f"Error al graficar rutas múltiples: {e}")
@@ -70,9 +71,9 @@ class Utilidades_Menu:
                 print(f'Opcion "{opcion}" inválida. Se espera (1-2-3).')
 
     @staticmethod
-    def elegir_itinerario(id, menor_costo, menor_tiempo):
-        print('Elegí el metodo de optimización \n1. Tiempo\n2. Costo')
-        opcion = input('Introduzca la opción elegida (1-2): ').strip()
+    def elegir_itinerario(id, menor_costo, menor_tiempo, menor_riesgo):
+        print('Elegí el metodo de optimización \n1. Tiempo\n2. Costo\n3. Riesgo')
+        opcion = input('Introduzca la opción elegida (1-3): ').strip()
 
         if opcion == '1':
             tupla   = menor_tiempo
@@ -82,6 +83,10 @@ class Utilidades_Menu:
             tupla   = menor_costo
             kpi_lbl = 'KPI 2'
             print('KPI 2: Minimizar el costo total del transporte')
+        elif opcion == '3':
+            tupla   = menor_riesgo
+            kpi_lbl = 'KPI 3'
+            print('KPI 2: Minimizar el riesgo total del transporte')
         else:
             print(f'Opción "{opcion}" inválida. Se espera (1-2).')
             return
@@ -105,8 +110,9 @@ class Utilidades_Menu:
             tupla[1],      
             kpi_lbl,
             vehiculo,      
-            tupla[4],      
-            tupla[5]      
+            tupla[4],   
+            tupla[6],   
+            tupla[5]   
         )
         Itinerario.Itinerario.mostrar_resumen(itinerario)
         return itinerario

@@ -33,9 +33,9 @@ class Planificador: #se instancia UNA VEZ.
         
         dic_rutas=Planificador.encontrar_todas_rutas(grafo,solicitud.origen, solicitud.destino)
 
-        tupla_menor_costo, tupla_menor_tiempo= Planificador.analisis_costo_tiempo(dic_rutas,solicitud.peso_kg) #las tuplas van: (costo,tiempo,ruta,tipo)
+        tupla_menor_costo, tupla_menor_tiempo, tupla_menor_riesgo= Planificador.analisis_costo_tiempo_riesgo(dic_rutas,solicitud.peso_kg) #las tuplas van: (costo,tiempo,ruta,tipo)
         
-        return solicitud.id_carga,tupla_menor_costo, tupla_menor_tiempo
+        return solicitud.id_carga,tupla_menor_costo, tupla_menor_tiempo, tupla_menor_riesgo
     
     @staticmethod
     def construir_grafo(diccionario):
@@ -105,32 +105,36 @@ class Planificador: #se instancia UNA VEZ.
         return min(range(len(lista)), key=lambda i: lista[i])
     
     @staticmethod
-    def analisis_costo_tiempo(diccionario_rutas,carga):# el diccionario_rutas es un diccionario de encontrar_todas_rutas
+    def analisis_costo_tiempo_riesgo(diccionario_rutas,carga):# el diccionario_rutas es un diccionario de encontrar_todas_rutas
         lista_costo = []
         lista_tiempo = []
         lista_rutas = []
         lista_tipos=[]
         lista_cantidad_vehiculos = []
+        lista_riesgo = []
         
         for tipo_transporte,lista_rutas_dic in diccionario_rutas.items() :
             for ruta in lista_rutas_dic:
-                costo_total, tiempo_total,tipo, cantidad_vehiculos = Sistema_de_Transporte.Tipo_transporte.calcular_costo_tiempo(ruta,carga,tipo_transporte)
+                costo_total, tiempo_total,tipo, cantidad_vehiculos, riesgo_total = Sistema_de_Transporte.Tipo_transporte.calcular_costo_tiempo_riesgo(ruta,carga,tipo_transporte)
                 lista_rutas.append(ruta)
                 lista_costo.append(costo_total)
                 lista_tiempo.append(tiempo_total)
                 lista_tipos.append(tipo)
                 lista_cantidad_vehiculos.append(cantidad_vehiculos)
+                lista_riesgo.append(riesgo_total)
                 
         if not lista_costo or not lista_tiempo:
              print("No hay rutas válidas para calcular.")
-             return None, None
+             return None, None, None
        
         i_costo = Planificador.indice_mas_bajo(lista_costo)
         i_tiempo = Planificador.indice_mas_bajo(lista_tiempo)
+        i_riesgo = Planificador.indice_mas_bajo(lista_riesgo)
         
-        tupla_menor_costo=(lista_costo[i_costo],lista_tiempo[i_costo],lista_rutas[i_costo],lista_tipos[i_costo],lista_cantidad_vehiculos[i_costo], carga)
-        tupla_menor_tiempo=(lista_costo[i_tiempo],lista_tiempo[i_tiempo],lista_rutas[i_tiempo],lista_tipos[i_tiempo],lista_cantidad_vehiculos[i_tiempo], carga)
-        return tupla_menor_costo, tupla_menor_tiempo
+        tupla_menor_costo=(lista_costo[i_costo],lista_tiempo[i_costo],lista_rutas[i_costo],lista_tipos[i_costo],lista_cantidad_vehiculos[i_costo], lista_riesgo[i_costo], carga)
+        tupla_menor_tiempo=(lista_costo[i_tiempo],lista_tiempo[i_tiempo],lista_rutas[i_tiempo],lista_tipos[i_tiempo],lista_cantidad_vehiculos[i_tiempo], lista_riesgo[i_tiempo], carga)
+        tupla_menor_riesgo=(lista_costo[i_riesgo],lista_tiempo[i_riesgo],lista_rutas[i_riesgo],lista_tipos[i_riesgo],lista_cantidad_vehiculos[i_riesgo], lista_riesgo[i_riesgo], carga)
+        return tupla_menor_costo, tupla_menor_tiempo,tupla_menor_riesgo
     
     
     

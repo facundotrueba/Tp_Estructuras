@@ -19,15 +19,6 @@ class Itinerario:
         return (f"Itinerario: {descripcion_tramos}\n Cantidad de conexiones: {len(self.ruta)}\n Tiempo total: {horas} h {minutos} m \n Costo total: ${self.costo}\n Riesgo total: {self.riesgo}\nKPI optimizado: {self.optimizacion}")  # si tenés ese atributo
 
        
-
-
-    ''' def mostrar_resumen(self):
-        descripcion_tramos = " → ".join(str(conex) for conex in self.ruta)
-        horas = int(self.tiempo)
-        minutos = int(round((self.tiempo - horas) * 60))
-        print(f"Itinerario: {descripcion_tramos}\n Cantidad de conexiones: {len(self.ruta)}\n Tiempo total: {horas} h {minutos} m \n Costo total: ${self.costo}\n Riesgo total: {self.riesgo}\nKPI optimizado: {self.optimizacion}")  # si tenés ese atributo
-
- '''
 class Nodo_lista_enlazada:
     def __init__(self, itinerario):
         self.itinerario = itinerario 

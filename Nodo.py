@@ -38,7 +38,7 @@ class Nodo:
             return
         i= 1
         for fila in datos:
-            if fila:  # chequea que no esté vacía
+            if fila: 
                 try:
                     nombre = Nodo.validar(fila[0])
                     Nodo(nombre)

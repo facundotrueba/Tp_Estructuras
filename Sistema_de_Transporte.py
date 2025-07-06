@@ -2,7 +2,7 @@ import math
 
 import random
 class Tipo_transporte:
-    def __init__(self, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg): #lo de los costos hacer archivo csv CHEQUEAR LUCAS
+    def __init__(self, velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg):
         if velocidad_nominal <= 0:
             raise ValueError("La velocidad no puede ser negativa")
         if capacidad_carga <= 0:
@@ -42,14 +42,14 @@ class Tipo_transporte:
             raise ValueError("Tipo de transporte no reconocido.")
     
     
-    def calcular_costo_variable(self, carga, ruta):#cambiE orden ### NO importa que no se use la ruta aca?????
+    def calcular_costo_variable(self, carga, ruta):
         costo_variable_total = self.costo_kg * carga
         return costo_variable_total
 
 
 
     @staticmethod
-    def ajustar_vehiculo_por_conexion(conexion, tipo_transporte): #Justificar muy bien con docstrings porque ponemos tipo== en vez de isinstance
+    def ajustar_vehiculo_por_conexion(conexion, tipo_transporte):
         tipo = tipo_transporte.lower()
         if tipo == "aerea":
             if getattr(conexion, 'restriccion', None) == 'prob_mal_tiempo':
@@ -80,7 +80,7 @@ class Tipo_transporte:
 
         
     
-    def cantidad_vehiculos(self, carga, ruta): #ruta es una lista de conexiones ##aca lo mismo que onda que no se usa ruta
+    def cantidad_vehiculos(self, carga, ruta): 
         return math.ceil(carga / self.capacidad_carga)
             
     
@@ -99,7 +99,7 @@ class Tipo_transporte:
     
     
     @staticmethod
-    def calcular_costo_tiempo_riesgo(ruta,carga,tipo_transporte): # ruta es lista de conexiones. #ruta= [zarate->bsas, bsas->mdp] cada uno es un objeto conexion
+    def calcular_costo_tiempo_riesgo(ruta,carga,tipo_transporte): #ruta es lista de conexiones. #ruta= [zarate->bsas, bsas->mdp] cada uno es un objeto conexion
         costo_total = 0
         tiempo_total = 0
         vehiculo = Tipo_transporte.crear_vehiculo_base(tipo_transporte)
@@ -121,12 +121,12 @@ class Tipo_transporte:
 
 
 
-class Automotor(Tipo_transporte): # el codigo va a funcionar de tal manera que si se arranca una ruta con 8 automotores, Si se puede despues hacer con 10 automotores y despues 8 de vuelta en otra conexion
+class Automotor(Tipo_transporte):
     def __init__(self,  velocidad_nominal=80, capacidad_carga= 30000, costo_fijo=30, costo_km= 5, costo_kg= 1):
         super().__init__(velocidad_nominal, capacidad_carga, costo_fijo, costo_km, costo_kg)
 
     
-    def calcular_costo_variable(self, carga, ruta):#cambiE orden
+    def calcular_costo_variable(self, carga, ruta):
             costo_variable_total = 0
             capacidad_efectiva = self.capacidad_carga
             for conexion in ruta:

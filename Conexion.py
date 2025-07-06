@@ -66,7 +66,7 @@ class Conexion:
         )
         
 
-    def __hash__(self): #Resolver! Puede que tengamos que cambiar la estructura
+    def __hash__(self): 
         return hash((self.origen, self.destino, self.tipo, self.distancia, self.restriccion, self.valor_restriccion, self.riesgo))
 
     @staticmethod
@@ -75,7 +75,7 @@ class Conexion:
         for i in range(len(lista)):
             if isinstance(lista[i], str):
                 lista[i] = lista[i].strip().lower()
-        if len(lista) != 7:                                    ###esperando lo que diga lucas
+        if len(lista) != 7:       
             raise TypeError('Cantidad de atributos insuficientes para instanciar una conexión')
         lista[4] = None if lista[4] == '' else lista[4]
         lista[5] = None if lista[5] == '' else lista[5]
@@ -156,9 +156,9 @@ class Conexion:
                 lista[6] = float(lista[6])
             except ValueError:
                 raise ValueError('El valor del riesgo debe ser un número válido')
-        if not isinstance(lista[6],float) and not (0<lista[6]<1):   ###
-            raise ValueError('El riesgo debe ser un número postivo mayor a 0 y menor a 1') ###
-        if Conexion.get_conexion(lista[0],lista[1],lista[2],lista[3],lista[4],lista[5], lista[6]) is not None: ###
+        if not isinstance(lista[6],float) and not (0<lista[6]<1):
+            raise ValueError('El riesgo debe ser un número postivo mayor a 0 y menor a 1')
+        if Conexion.get_conexion(lista[0],lista[1],lista[2],lista[3],lista[4],lista[5], lista[6]) is not None:
             raise ValueError(f"La conexion '{lista[0]} a {lista[1]} de tipo: {lista[2]}' ya fue cargado.")
         return lista
     @staticmethod                                    

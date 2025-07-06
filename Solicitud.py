@@ -2,8 +2,8 @@ from collections import deque
 import Nodo
 import Leer
 class Solicitud_Transporte:
-    cola_solicitudes = deque() #esto es una cola
-    historial_solicitudes_procesadas = deque() #esto es una pila con las solicitudes q ya se sacaron de la cola
+    cola_solicitudes = deque() #Esto es una cola
+    
     def __init__(self, id_carga, peso_kg, origen, destino):
         if peso_kg <= 0: #Validaciones
             raise ValueError("El peso debe ser mayor a cero.")
@@ -66,5 +66,7 @@ class Solicitud_Transporte:
                     i=0
         if i:
             print('Solicitudes cargadas exitosamente.')
+    
+    
             
             

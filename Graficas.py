@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.cm as cm
 import Sistema_de_Transporte
+from collections import Counter
 
 
 class Graficos:
@@ -193,3 +194,34 @@ class Graficos:
         plt.tight_layout()
         plt.grid(axis='y', linestyle='--', alpha=0.7)
         plt.show()
+
+    
+    
+    @staticmethod
+    def plot_conexiones_mas_usadas(lista_itinerarios, top_n=None):
+        cnt = Counter()
+        nodo = lista_itinerarios.cabeza
+        while nodo:
+            for c in nodo.itinerario.ruta:
+                key = f"{c.origen}→{c.destino}"
+                cnt[key] += 1
+            nodo = nodo.siguiente
+
+        comunes    = cnt.most_common(top_n)
+        etiquetas  = [c[0] for c in comunes]
+        valores    = [c[1] for c in comunes]
+
+        plt.figure(figsize=(10,6))
+        plt.bar(etiquetas, valores)
+        plt.xticks(rotation=45, ha="right")
+
+        plt.title("Tramos Más Transitados")
+        
+        max_y = max(valores, default=0)
+        plt.yticks(range(0, max_y+1))
+       
+        plt.ylabel("Número de recorridos")
+        plt.tight_layout()
+        plt.show()
+
+  

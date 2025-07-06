@@ -1,4 +1,3 @@
-import Leer
 import Planificador
 import Itinerario
 import Solicitud
@@ -28,21 +27,26 @@ class Utilidades_Menu:
     def menu_principal():
         salir = False
         Planero = Planificador.Planificador('ADMIN')
+        hay_solicitudes_procesadas = False
+        
         while not salir:
             print('-' * 50)
             print('Sistema de transporte - Menú principal')
             print('-' * 50)
             print('1. Cargar nodos, conexiones y solicitudes')
             print('2. Procesar solicitudes')
-            print('3. Salir')
-            opcion = input("Seleccione una opción (1-3): ").strip() 
+            print("3. Ver solicitudes procesadas")
+            print('4. Ver tramos más transitados')
+            print('5. Salir')
+            opcion = input("Seleccione una opción (1-5): ").strip()
             if opcion == '1':
                 Utilidades_Menu.cargar_sistema()
             elif opcion == '2':
                 if Solicitud.Solicitud_Transporte.hay_solicitudes():
                     try:
                         id, tupla_menor_costo, tupla_menor_tiempo, tupla_menor_riesgo = Planero.procesar_siguiente() 
-                        itinerario = Utilidades_Menu.elegir_itinerario(id, tupla_menor_costo, tupla_menor_tiempo, tupla_menor_riesgo)
+                        itinerario = Utilidades_Menu.elegir_itinerario(id, tupla_menor_costo, tupla_menor_tiempo, tupla_menor_riesgo, Planero.historial_solicitudes_procesadas)
+                        hay_solicitudes_procesadas = True
                     except TypeError as e:
                         print(e)
                         return
@@ -65,13 +69,20 @@ class Utilidades_Menu:
                 else: 
                     print("No hay solicitudes pendientes.")       
             elif opcion == '3':
+                Utilidades_Menu.historial_itinerarios(Planero.historial_solicitudes_procesadas)
+            elif opcion == '4':
+                if hay_solicitudes_procesadas:
+                    Graficas.Graficos.plot_conexiones_mas_usadas(Planero.historial_solicitudes_procesadas)
+                else:
+                    print('No hay solicitudes procesadas')
+            elif opcion == '5':
                 print('Programa terminado')
                 salir = True
             else:
-                print(f'Opcion "{opcion}" inválida. Se espera (1-2-3).')
+                print(f'Opcion "{opcion}" inválida. Se espera (1-2-3-4-5).')
 
     @staticmethod
-    def elegir_itinerario(id, menor_costo, menor_tiempo, menor_riesgo):
+    def elegir_itinerario(id, menor_costo, menor_tiempo, menor_riesgo,historial_solicitudes_procesadas):
         print('Elegí el metodo de optimización \n1. Tiempo\n2. Costo\n3. Riesgo')
         opcion = input('Introduzca la opción elegida (1-3): ').strip()
 
@@ -86,9 +97,9 @@ class Utilidades_Menu:
         elif opcion == '3':
             tupla   = menor_riesgo
             kpi_lbl = 'KPI 3'
-            print('KPI 2: Minimizar el riesgo total del transporte')
+            print('KPI 3: Minimizar el riesgo total del transporte')
         else:
-            print(f'Opción "{opcion}" inválida. Se espera (1-2).')
+            print(f'Opción "{opcion}" inválida. Se espera (1-3).')
             return
 
         mapa_tipos = {
@@ -115,7 +126,26 @@ class Utilidades_Menu:
             tupla[5]   
         )
         Itinerario.Itinerario.mostrar_resumen(itinerario)
+        historial_solicitudes_procesadas.agregar(itinerario)
+        
         return itinerario
-
+    
+    @staticmethod
+    def historial_itinerarios(historial):
+        id_solicitud = input('Ingrese el ID de la solicitud procesada que quiere ver: ')
+        actual = historial.cabeza
+        solicitud_procesada =False
+        while actual:
+            if id_solicitud==actual.itinerario.id_solicitud:
+                print(f'ID: {id_solicitud}')
+                print(f'{actual.itinerario}')
+            
+                solicitud_procesada = True          
+            actual = actual.siguiente
+        if not solicitud_procesada:
+            print('La solicitud ingresada no fue procesada')
+            
+        
+        
 
 Utilidades_Menu.menu_principal()

@@ -125,7 +125,7 @@ class Utilidades_Menu:
             tupla[6],   
             tupla[5]   
         )
-        Itinerario.Itinerario.mostrar_resumen(itinerario)
+        print(itinerario)
         historial_solicitudes_procesadas.agregar(itinerario)
         
         return itinerario
